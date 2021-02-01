@@ -10,7 +10,8 @@ __all__ = ['PI',
            'RHO',
            'ETA',
            'T_RNG',
-           'DT_STEP']
+           'DT_STEP',
+           'TEMP_RES']
 
 
 PI = 0.33
@@ -26,3 +27,8 @@ T_RNG = 15
 DT_STEP = 52
 """Time step used for optimization (52 : week)
    (value currently copied from the original model)"""
+TEMP_RES = 4
+"""Temporal resolution after recovery in weeks
+   (value currently copied from the original model)"""
+RECO_PERIOD = 40
+"""Time frame after first disaster in years where reconstruction is modeled (in years)"""
