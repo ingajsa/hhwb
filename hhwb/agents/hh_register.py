@@ -30,6 +30,7 @@ class HHRegister():
 
         self.__hh_list = []
         self.__n_hh = 0
+        self.__region_hhs = {}
 
     @property
     def hh_list(self):
@@ -39,8 +40,14 @@ class HHRegister():
     def n_hh(self):
         return self.__n_hh
 
+    @property
+    def region_hhs(self):
+        return self.__region_hhs
+
     def set_from_csv(self, path='/data/test_data.csv', id_col='HHID', weight_col='weight',
-                     vul_col='vul', income_col='income', income_sp='income_sp'):
+                     vul_col='vul', income_col='income', income_sp='income_sp', region='region',
+                     decile='decile', savings='savings', poverty_line='poverty_line',
+                     ispoor=None, isurban=None):
         """
         This function reads the household information from the FIES if it is given in a
         csv file. It provides the full list of household agents.
@@ -53,10 +60,21 @@ class HHRegister():
                               social transfers
             weight_col (str): column name of the column containing the household's weight
             vul_col (str): column name of the column containing the household's vulnerability
+            region (str): column name of the column containing the region in which the household
+                          is located
+            decile (str): column name of the income decile to which the household belongs
+            savings (str): column name of the household's savings'
+            poverty_line (str): name of the column containing the poverty line in the area of the
+                         household
+            ispoor (str): name of the column that indicates whether the household is poor
+            isurban (str): name of the column that indicates whether the household is located in
+                           an urban or rural area
         """
-        data = pd.read_csv(DATA_DIR + path)
 
+        data = pd.read_csv(DATA_DIR + path)
         self.__n_hh = data.shape[0]
+        self.__extract_meta_info(data)
+
         hh_list = []
         for hhid in range(self.__n_hh):
 
@@ -67,9 +85,37 @@ class HHRegister():
             hh_inc = hh_data[income_col]
             hh_inc_sp = hh_data[income_sp]
 
-            hh = Household(hhid=hh_id, w=hh_w, vul=hh_vul, i_0=hh_inc, i_sp=hh_inc_sp)
+            hh_reg = hh_data[region]
+            hh_dec = hh_data[decile]
+            hh_sav = hh_data[savings]
+            hh_pov_line = hh_data[poverty_line]
+            if ispoor:
+                hh_poor = hh_data[ispoor]
+            else:
+                hh_poor = None
+
+            if isurban:
+                hh_urban = hh_data[isurban]
+            else:
+                hh_urban = None
+
+            hh = Household(hhid=hh_id, w=hh_w, vul=hh_vul, i_0=hh_inc, i_sp=hh_inc_sp,
+                           region=hh_reg, savings=hh_sav, poverty_line=hh_pov_line, decile=hh_dec,
+                           isurban=hh_urban, ispoor=hh_poor)
             hh_list.append(hh)
 
         self.__hh_list = hh_list
+
+        return
+
+    def __extract_meta_info(self, data):
+
+        regions = list(set(data['region']))
+
+        for region in regions:
+
+            hhids = list(data.loc[data['region'] == region, 'hhid'])
+
+            self.__region_hhs.update({region: hhids})
 
         return

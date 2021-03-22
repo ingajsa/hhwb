@@ -1,0 +1,56 @@
+\hypertarget{classhh__register_1_1HHRegister}{}\section{hh\+\_\+register.\+H\+H\+Register Class Reference}
+\label{classhh__register_1_1HHRegister}\index{hh\+\_\+register.\+H\+H\+Register@{hh\+\_\+register.\+H\+H\+Register}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classhh__register_1_1HHRegister_a347ae8c093b6e38837d200afb8ca5275}\label{classhh__register_1_1HHRegister_a347ae8c093b6e38837d200afb8ca5275}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+\mbox{\Hypertarget{classhh__register_1_1HHRegister_a2b0a16d9c29fbfd0e083f584ee2190fa}\label{classhh__register_1_1HHRegister_a2b0a16d9c29fbfd0e083f584ee2190fa}} 
+def {\bfseries hh\+\_\+list} (self)
+\item 
+\mbox{\Hypertarget{classhh__register_1_1HHRegister_a53962d9da6041c5613ff84a6ceb11704}\label{classhh__register_1_1HHRegister_a53962d9da6041c5613ff84a6ceb11704}} 
+def {\bfseries n\+\_\+hh} (self)
+\item 
+def \hyperlink{classhh__register_1_1HHRegister_ac4f13033280159722bcfbac281973465}{set\+\_\+from\+\_\+csv} (self, path=\textquotesingle{}/data/test\+\_\+data.\+csv\textquotesingle{}, id\+\_\+col=\textquotesingle{}H\+H\+ID\textquotesingle{}, weight\+\_\+col=\textquotesingle{}weight\textquotesingle{}, vul\+\_\+col=\textquotesingle{}vul\textquotesingle{}, income\+\_\+col=\textquotesingle{}income\textquotesingle{}, income\+\_\+sp=\textquotesingle{}income\+\_\+sp\textquotesingle{})
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{DoxyVerb}This class represents the intersection between the FIES and the model. All households
+   listed in the FIES are initialised as an household object extracting information from the
+   relevant columns. All required column names need to be provided during the initialisation
+   of the HHRegister. The major attribute needed for further modeling is then a list of all
+   registered households.
+
+   Attributes:
+
+       hh_list (list): list with the registered households
+       n_hh (int): number of registered households
+\end{DoxyVerb}
+ 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classhh__register_1_1HHRegister_ac4f13033280159722bcfbac281973465}\label{classhh__register_1_1HHRegister_ac4f13033280159722bcfbac281973465}} 
+\index{hh\+\_\+register\+::\+H\+H\+Register@{hh\+\_\+register\+::\+H\+H\+Register}!set\+\_\+from\+\_\+csv@{set\+\_\+from\+\_\+csv}}
+\index{set\+\_\+from\+\_\+csv@{set\+\_\+from\+\_\+csv}!hh\+\_\+register\+::\+H\+H\+Register@{hh\+\_\+register\+::\+H\+H\+Register}}
+\subsubsection{\texorpdfstring{set\+\_\+from\+\_\+csv()}{set\_from\_csv()}}
+{\footnotesize\ttfamily def hh\+\_\+register.\+H\+H\+Register.\+set\+\_\+from\+\_\+csv (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{path = {\ttfamily \textquotesingle{}/data/test\+\_\+data.csv\textquotesingle{}},  }\item[{}]{id\+\_\+col = {\ttfamily \textquotesingle{}HHID\textquotesingle{}},  }\item[{}]{weight\+\_\+col = {\ttfamily \textquotesingle{}weight\textquotesingle{}},  }\item[{}]{vul\+\_\+col = {\ttfamily \textquotesingle{}vul\textquotesingle{}},  }\item[{}]{income\+\_\+col = {\ttfamily \textquotesingle{}income\textquotesingle{}},  }\item[{}]{income\+\_\+sp = {\ttfamily \textquotesingle{}income\+\_\+sp\textquotesingle{}} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}This function reads the household information from the FIES if it is given in a
+csv file. It provides the full list of household agents.
+
+Parameters:
+    path (str): path of the input data frame
+    id_col (str): column name of the column containing the household ID
+    income_col (str): column name of the column containing the household's total income
+    income_sp (str): column name of the column containing the household's income from
+              social transfers
+    weight_col (str): column name of the column containing the household's weightinc_reco
+    vul_col (str): column name of the column containing the household's vulnerability
+\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/insauer/projects/\+W\+B\+\_\+model/hhwb/hhwb/agents/hh\+\_\+register.\+py\end{DoxyCompactItemize}

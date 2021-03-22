@@ -1,0 +1,96 @@
+\hypertarget{classgovernment_1_1Government}{}\section{government.\+Government Class Reference}
+\label{classgovernment_1_1Government}\index{government.\+Government@{government.\+Government}}
+
+
+Inheritance diagram for government.\+Government\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=204pt]{classgovernment_1_1Government__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for government.\+Government\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=204pt]{classgovernment_1_1Government__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classgovernment_1_1Government_a20d7e7f64fa8fed27b63ace640f38065}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_a9c46e1fc5740686cf4caabb7455242e4}\label{classgovernment_1_1Government_a9c46e1fc5740686cf4caabb7455242e4}} 
+def {\bfseries tax\+\_\+rate} (self)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_a576829808c2a5fa937bfe14cdf764741}\label{classgovernment_1_1Government_a576829808c2a5fa937bfe14cdf764741}} 
+def {\bfseries sp\+\_\+cost} (self)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_aac69e3171408501995df5aa8885caaa6}\label{classgovernment_1_1Government_aac69e3171408501995df5aa8885caaa6}} 
+def {\bfseries K} (self)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_a2eb88be006ea8dc3d2b8ccb1130e6c71}\label{classgovernment_1_1Government_a2eb88be006ea8dc3d2b8ccb1130e6c71}} 
+def {\bfseries L\+\_\+t} (self)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_a1a28cd2b1dd21cf5b8b8d384efcbe9a8}\label{classgovernment_1_1Government_a1a28cd2b1dd21cf5b8b8d384efcbe9a8}} 
+def {\bfseries update} (self, hh)
+\item 
+def \hyperlink{classgovernment_1_1Government_adc27c11d09806596774abc2b4e786cc4}{set\+\_\+tax\+\_\+rate} (self, reg\+\_\+hh)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_ae63c718191d2781db4567e0aa30cf444}\label{classgovernment_1_1Government_ae63c718191d2781db4567e0aa30cf444}} 
+def {\bfseries start\+\_\+hh\+\_\+reco} (self)
+\item 
+\mbox{\Hypertarget{classgovernment_1_1Government_a52f80ef2c1d974be4543e1f368e3a928}\label{classgovernment_1_1Government_a52f80ef2c1d974be4543e1f368e3a928}} 
+def {\bfseries update\+\_\+\+L\+\_\+t} (self, reg\+\_\+hh)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{DoxyVerb}Household definition. Computed from the FIES and interacts with the classes
+Government and Shock.
+
+Attributes:
+    ***Attributes regarding the predisaster situation***
+    tax_rate (float): flat income tax
+    sp_cost (float): total spendings on social transfers
+    K (float): Total national capital stock
+
+    ***Attributes related to disaster recovery***
+    L_0 (list): total national damage experienced at each shock
+    vul (list): conceptional vulnerability at each shock as ratio L/K
+    lmbda (float): optimal recovery rate
+    tau (float): time at which 95% of capital stock is recovered
+    L_t (float): loss at timestep t after disaster
+\end{DoxyVerb}
+ 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classgovernment_1_1Government_a20d7e7f64fa8fed27b63ace640f38065}\label{classgovernment_1_1Government_a20d7e7f64fa8fed27b63ace640f38065}} 
+\index{government\+::\+Government@{government\+::\+Government}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!government\+::\+Government@{government\+::\+Government}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def government.\+Government.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Empty Definition\end{DoxyVerb}
+ 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classgovernment_1_1Government_adc27c11d09806596774abc2b4e786cc4}\label{classgovernment_1_1Government_adc27c11d09806596774abc2b4e786cc4}} 
+\index{government\+::\+Government@{government\+::\+Government}!set\+\_\+tax\+\_\+rate@{set\+\_\+tax\+\_\+rate}}
+\index{set\+\_\+tax\+\_\+rate@{set\+\_\+tax\+\_\+rate}!government\+::\+Government@{government\+::\+Government}}
+\subsubsection{\texorpdfstring{set\+\_\+tax\+\_\+rate()}{set\_tax\_rate()}}
+{\footnotesize\ttfamily def government.\+Government.\+set\+\_\+tax\+\_\+rate (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{reg\+\_\+hh }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Sets the optimal tax rate basing on the total enrollment for social transfers and
+extracts capital stock from each hh to get total national capital stock
+    Parameters:
+reg_hh (list): all registered households
+\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/insauer/projects/\+W\+B\+\_\+model/hhwb/hhwb/agents/government.\+py\end{DoxyCompactItemize}

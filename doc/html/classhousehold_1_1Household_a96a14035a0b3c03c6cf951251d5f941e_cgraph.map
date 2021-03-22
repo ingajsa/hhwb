@@ -1,0 +1,9 @@
+<map id="household.Household.update_reco" name="household.Household.update_reco">
+<area shape="rect" id="node2" href="$classhousehold_1_1Household.html#aabbea1f336db6360755ce33f95924d01" title="household.Household.\l__update_k_eff" alt="" coords="294,5,445,47"/>
+<area shape="rect" id="node3" href="$classhousehold_1_1Household.html#abd45ec3cce8792c3001ac370f893b81f" title="household.Household.\l__update_income_sp" alt="" coords="294,71,445,112"/>
+<area shape="rect" id="node4" href="$classhousehold_1_1Household.html#abc13d65549b8f99723e2a1b310c8140b" title="household.Household.\l__update_income" alt="" coords="294,136,445,177"/>
+<area shape="rect" id="node5" href="$classhousehold_1_1Household.html#a4c3f07f6940248e2cc548373d2303aaf" title="household.Household.\l__update_consum" alt="" coords="294,201,445,243"/>
+<area shape="rect" id="node6" href="$classhousehold_1_1Household.html#ab9aa47f8e64ddaf4825c90c1832b3ddd" title="household.Household.shock" alt="" coords="276,267,463,294"/>
+<area shape="rect" id="node7" href="$classhousehold_1_1Household.html#a9d3840e6772bbaffcfb71b4bef24c99c" title="household.Household.\l__set_shock_state" alt="" coords="511,227,661,268"/>
+<area shape="rect" id="node8" href="$classhousehold_1_1Household.html#ac1d4b51d4f6131d0fad70b4bbd00acda" title="household.Household.\l__get_reco_fee" alt="" coords="511,292,661,333"/>
+</map>

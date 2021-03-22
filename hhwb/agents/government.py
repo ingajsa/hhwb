@@ -8,7 +8,7 @@ Created on Sat Jun 27 21:41:02 2020
 
 import numpy as np
 from hhwb.agents.agent import Agent
-from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP
+from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD
 
 AGENT_TYPE = 'GV'
 
@@ -39,13 +39,18 @@ class Government(Agent):
         self.__sp_cost = 0.
         self.__K = 0.
 
-        self.__L_0 = []
+        self.__L_0 = 0
         self.__vul = []
 
         self.__lmbda = None
         self.__tau = None
 
-        self.__L_t = np.array([])
+        self.__L_t = 0
+        
+        self.__k_eff_reco_test = np.array([])
+        self.__inc_reco_test = np.array([])
+        self.__inc_sp_reco_test = np.array([])
+        self.__con_reco_test = np.array([])
 
     @property
     def tax_rate(self):
@@ -59,9 +64,41 @@ class Government(Agent):
     def K(self):
         return self.__K
 
-    def update(self, hh):
+    @property
+    def L_t(self):
+        return self._d_k_eff_t
 
-        return
+    # @property
+    # def inc_reco_test(self):
+    #     return self.__inc_reco_test
+
+    # @property
+    # def inc_sp_reco_test(self):
+    #     return self.__inc_sp_reco_test
+
+    # @property
+    # def cons_reco_test(self):
+    #     return self.__cons_reco_test
+
+    # @property
+    # def k_eff_reco_test(self):
+    #     return self.__k_eff_reco_test
+    
+    # @property
+    # def d_k_eff_t_test(self):
+    #     return self.__d_k_eff_t_test
+
+    # @property
+    # def d_inc_t_test(self):
+    #     return self.__d_inc_t_test
+
+    # @property
+    # def d_inc_sp_t_test(self):
+    #     return self.__d_inc_sp_t_test
+
+    # @property
+    # def d_con_t_test(self):
+    #     return self.__d_con_t_test
 
     def set_tax_rate(self, reg_hh):
         """
@@ -84,60 +121,103 @@ class Government(Agent):
         # set tax rate for all households and get capital stock
         for hh in reg_hh:
             hh.set_tax_rate(self.__tax_rate)
-            hh.init_reco()
+            hh.init_life()
             self.__K += hh.weight*hh.k_eff_0
         return
+    
+    def update_reco(self, t_i=0., hh_reg=None):
+        """
+        Parameters
+        ----------
+        t : TYPE
+            DESCRIPTION.
+        t_i : TYPE
+            DESCRIPTION.
+        L_t : TYPE
+            DESCRIPTION.
+        K : TYPE
+            DESCRIPTION.
 
+        Returns
+        -------
+        None.
+    
+        """
 
-    def start_hh_reco(self):
-        self.__vul = self.__L_t/self.__K
-
+        self.__update_all(hh_reg)
+        if t_i % TEMP_RES == 0:
+            self._k_eff_reco[int(t_i/TEMP_RES)] = self._d_k_eff_t
+            self._inc_reco[int(t_i/TEMP_RES)] = self._d_inc_t
+            self._inc_sp_reco[int(t_i/TEMP_RES)] = self._d_inc_sp_t
+            self._cons_reco[int(t_i/TEMP_RES)] = self._d_con_t
+            self._wb_reco[int(t_i/TEMP_RES)] = self._d_wb_t
+            # self.__k_eff_reco_test[int(t_i/TEMP_RES)] = self.__d_k_eff_t_test
+            # self.__inc_reco_test[int(t_i/TEMP_RES)] = self.__d_inc_t_test
+            # self.__inc_sp_reco_test[int(t_i/TEMP_RES)] = self.__d_inc_sp_t_test
+            # self.__cons_reco_test[int(t_i/TEMP_RES)] = self.__d_con_t_test
         return
 
-    def __update_L_t(self, reg_hh):
+
+    # def update(self, reg_hh):
+    #     self.__L_t = 0.
+    #     self.__d_cons = 0.
+    #     for hh in reg_hh:
+    #         self.__L_t += hh.d_k_eff_t
+    #     return
+
+    def __update_all(self, reg_hh):
+        self._d_k_eff_t = 0.
+        self._d_con_t = 0.
+        self._d_inc_t = 0.
+        self._d_inc_sp_t = 0.
+        self._d_wb_t = 0.
         for hh in reg_hh:
-            self.__L_t += hh.d_k_eff_t
+            self._d_k_eff_t += hh.d_k_eff_t
+            self._d_con_t += hh.d_con_t
+            self._d_inc_t += hh.d_inc_t
+            self._d_inc_sp_t += hh.d_inc_sp_t
+            self._d_wb_t += hh.d_wb_t
         return
     
-    
+    def _set_shock_state(self, L, K, aff_flag, dt):
+        """This function calculates the initial damage and the initial loss in income and
+           consumption.
+        Parameters
+        ----------
+        L : float, optional
+            Total national damage. The default is 0.
+        K : float, optional
+            Total national capital stock. The default is 0.
+        """
+        self._dt = dt
 
-    def __optimize_reco(self):
-        """
-        This is the core optimization function, that numerically optimizes
-        the optimal reconstruction rate lmbda of the household and derives the
-        reconstruction time tau
-        TODO (- eventually implement a static jit version
-              - this must be done multicore)
-        """
-        if self.__vul == 0:
-            return
-    
-        last_integ = None
-        last_lambda = None
-    
-        lmbda = 0.0
-    
-        while True:
-    
-            integ = 0.0
-            for dt in np.linspace(0, T_RNG, DT_STEP*T_RNG):
-                integ += np.e**(-dt * (RHO + lmbda)) * ((PI + lmbda) * dt - 1) * (PI - (PI + lmbda) * self.__vul * np.e**(-lmbda * dt))**(-ETA)
-    
-            if last_integ and ((last_integ < 0 and integ > 0) or
-                               (last_integ > 0 and integ < 0)):
-                print('\n Found the Minimum!\n lambda = ', last_lambda,
-                      '--> integ = ', last_integ)
-                print('lambda = ', lmbda, '--> integ = ', integ, '\n')
-    
-                out = (lmbda+last_lambda)/2
-    
-                self.__lmbda = out
-                self.__tau = np.log(1./0.05) * (1./self.__lmbda)
-                return
-    
-            last_integ = integ
-            if last_integ is None:
-                assert(False)
-    
-            last_lambda = lmbda
-            lmbda += 0.01
+        self._vul = L/self.__K
+        #self._optimize_reco()
+        if aff_flag:
+            self._d_k_eff_t = L
+        else:
+            self._d_k_eff_t = self.__K * 0
+
+        self._damage.append(self._d_k_eff_t)
+        self._d_inc_sp_t = (L/self.__K) * self.__sp_cost
+        self._d_inc_t = PI * L + self._d_inc_sp_t
+        self._d_con_t = np.nan
+
+        return
+
+    # def _update_income_sp(self):
+    #     self._d_inc_sp_t = (self._d_k_eff_t/self.__K) * self.__sp_cost
+    #     return
+
+    # def _update_income(self):
+    #     self._d_inc_t = PI * self._d_k_eff_t
+    #     return
+
+    # def _update_consum(self, t):
+    #     self._d_con_t = self._d_inc_t + self._lmbda * self._get_reco_fee(t=t)
+    #     return
+
+    # def _update_k_eff(self, t):
+
+    #     self._d_k_eff_t = self._get_reco_fee(t=t)
+    #     return

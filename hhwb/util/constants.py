@@ -11,14 +11,15 @@ __all__ = ['PI',
            'ETA',
            'T_RNG',
            'DT_STEP',
-           'TEMP_RES']
+           'TEMP_RES',
+           'RECO_PERIOD']
 
 
 PI = 0.33
 """Productivity of capital (value currently copied from the original model)"""
 RHO = 0.06
 """Utility discount rate (value currently copied from the original model)"""
-ETA = 1.5
+ETA = 2.
 """Elasticity of the marginal utility of consumption
    (value currently copied from the original model)"""
 T_RNG = 15
@@ -32,3 +33,6 @@ TEMP_RES = 4
    (value currently copied from the original model)"""
 RECO_PERIOD = 40
 """Time frame after first disaster in years where reconstruction is modeled (in years)"""
+DT = RECO_PERIOD / (RECO_PERIOD * DT_STEP)
+"""Time differnece in years between two time stemps"""
+
