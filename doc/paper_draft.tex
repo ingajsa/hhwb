@@ -13,10 +13,20 @@
 \section{Agenda for Brian}
 \begin{itemize}
 	\item Survey design extracting social protection
+	\item using the income and consumption gap
+	\begin{itemize}
+	\item In the case of the NCR region, most households can recover rapidly, in 2 to 3 years, and only a few households take more than five years to fully rebuild their asset base. In the
+	case of Bicol, with much higher poverty rates, reconstruction is much longer, with a
+	significant fraction of households needing more than five years to rebuild their asset
+	base. $\rightarrow$ here this only arises due to different vulnerabilities and recovery under the subsidence level.
+	\end{itemize}
+	\item assumption that one disaster effecs only one region
 	\item Recovery of public capital stock
+	\item capital owned by others...
 	\item missing income data for Malawi
 	\item case study Mozambique
-	\item modeling only income from labour
+	\item modeling only income from labour (over capital from others)
+	
 \end{itemize}
 \section{Methods}
 \subsection{Asset damages}
@@ -72,5 +82,33 @@ And for any following shock we estimate $\Delta k_h^{eff}(t_{shock})$ from the c
 \begin{equation}
 \Delta k_h^{eff}(t_{shock}) = v_h \cdot (k_h^{eff} -  \Delta k_h^{eff}(t_{shock} - 1))
 \end{equation}
+\subsection{Aspects currently missing}
+\begin{itemize}
+	\item public capital stock \\
+	TODO: we distribute $k^{eff}_{h}$ to private $k_h$) and
+	public ($k^{pub}_{h}$) using the fraction of private to total asset losses in the region, assuming that (1) the ratios of the different capital categories are similar for all households, and (2) the vulnerability of each household’s public assets is given by the vulnerability of
+	its private assets. 
+	\begin{itemize}
+		\item Does this mean we only optimize over the private capital stock loss but calculate income loss from the public and the private capital stock loss?
+	\end{itemize}
+	\item we have no timing in our events
+	\item subsidence level \\
+	TODO:
+	If the households cannot avoid having consumption below the subsistence line (for
+	instance because consumption is below the subsistence level even without repairing
+	and replacing lost assets), then we assume that reconstruction takes place at the pace
+	possible with a saving rate equal to the average saving rate of people living at or
+	below subsistence level in the Philippines (according to the FIES).
+	In addition, households must maintain consumption above a certain level to meet
+	their essential needs. To reflect this, we use the following heuristic: if a household
+	cannot afford to reconstruct at the optimal rate without falling into subsistence (i.e.
+	if ($i_h − \Delta i_h − \lambda_h \  \Delta k^{eff}\ \Biggr|_{t=t_0} < i_{sub}$), then the household reduces its consumption to the subsistence line less the regional savings rate for households in subsistence ($R^{sub}_{sav}$), and uses the balance of its post-disaster income to reconstruct. Its consumption remains at this level until its reconstruction rate reaches the optimum. This leads to an
+	initial reconstruction rate equal to $ \lambda_h = \frac{1}{k^{priv}}\cdot  i_h − \Delta i_h − i_{sub} + R_{sub}$
+	.
+	\item bifurication
+	\item early warning system
+	\item tax for public recovery
+	
+\end{itemize}
 
 \end{document}
