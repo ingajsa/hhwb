@@ -114,7 +114,7 @@ class HHRegister():
 
         for region in regions:
 
-            hhids = list(data.loc[data['region'] == region, 'hhid'])
+            hhids = list(data.loc[data['region'] == region, 'HHID'])
 
             self.__region_hhs.update({region: hhids})
 

@@ -106,6 +106,10 @@ class Household(Agent):
     def consum_0(self):
         return self.__con_0
 
+    @property
+    def decile(self):
+        return self.__decile
+
 
 
     def set_tax_rate(self, tax_rate=0):

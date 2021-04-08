@@ -23,7 +23,7 @@ class ClimateLife():
         self.__pt = np.array([])
         self.__dt_life = np.array([])
         
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(20, 10))
         plt.suptitle('Household Resilience Model', size=20)
         
         self.__info_summary = gridspec.GridSpec(3, 3)
@@ -112,10 +112,10 @@ class ClimateLife():
     def __plot_cons(self, n_plot_hhs=4, plot_hhs=None):
         self.__abs_cons.clear()
         self.__abs_cons.set_xlim((-1, RECO_PERIOD))
-        self.__abs_cons.set_ylim((0, 4000000))
+        self.__abs_cons.set_ylim((0, 30000))
         self.__abs_cons.set_title('HH total consumption loss USD')
         self.__abs_cons.set_ylabel('Absolute loss in USD')
-        self.__abs_cons.set_xlabel('time in years')
+        #self.__abs_cons.set_xlabel('time in years')
         colours = ['blue', 'red', 'green', 'gold', 'brown', 'black', 'purple', 'pink','seagreen', 'firebrick']
 
         for h, phh in enumerate(plot_hhs):
@@ -125,7 +125,7 @@ class ClimateLife():
     def __plot_inc(self, n_plot_hhs=4, plot_hhs=None):
         self.__abs_inc.clear()
         self.__abs_inc.set_xlim((-1, RECO_PERIOD))
-        self.__abs_inc.set_ylim((0, 3000000))
+        self.__abs_inc.set_ylim((0, 20000))
         self.__abs_inc.set_title('HH total income loss USD')
         self.__abs_inc.set_ylabel('Absolute loss in USD')
         self.__abs_inc.set_xlabel('time in years')
@@ -140,7 +140,7 @@ class ClimateLife():
     def __plot_inc_sp(self, n_plot_hhs=4, plot_hhs=None):
         self.__abs_inc_sp.clear()
         self.__abs_inc_sp.set_xlim((-1, RECO_PERIOD))
-        self.__abs_inc_sp.set_ylim((0, 300000))
+        self.__abs_inc_sp.set_ylim((0, 3000))
         self.__abs_inc_sp.set_title('HH income loss from social programs USD')
         self.__abs_inc_sp.set_ylabel('Absolute loss in USD')
         self.__abs_inc_sp.set_xlabel('time in years')
@@ -150,12 +150,11 @@ class ClimateLife():
             self.__abs_inc_sp.plot(self.__pt, self.__hhs[phh].inc_sp_reco, color = colours[h],
                                label='HH' + str(self.__hhs[phh].hhid))
         
-        self.__abs_inc.legend()
         
     def __plot_k_eff(self, n_plot_hhs=4, plot_hhs=None):
         self.__abs_k.clear()
         self.__abs_k.set_xlim((-1, RECO_PERIOD))
-        self.__abs_k.set_ylim((0, 1000000))
+        self.__abs_k.set_ylim((0, 80000))
         self.__abs_k.set_title('HH capital stock damage')
         self.__abs_k.set_ylabel('Absolute damage in USD')
         self.__abs_k.set_xlabel('time in years')
@@ -164,28 +163,26 @@ class ClimateLife():
         for h, phh in enumerate(plot_hhs):
             self.__abs_k.plot(self.__pt, self.__hhs[phh].k_eff_reco, color = colours[h],
                                label='HH' + str(self.__hhs[phh].hhid))
-        
-        self.__abs_inc.legend()
     
     def __plot_wb(self, n_plot_hhs=4, plot_hhs=None):
         self.__abs_wb.clear()
         self.__abs_wb.set_xlim((-1, RECO_PERIOD))
         #self.__abs_wb.set_ylim((0, 100000))
-        self.__abs_wb.set_title('HH WB loss')
+        self.__abs_wb.set_title('Accumlated HH WB loss')
         self.__abs_wb.set_ylabel('')
-        self.__abs_wb.set_xlabel('time in years')
+        #self.__abs_wb.set_xlabel('time in years')
         colours = ['blue', 'red', 'green', 'gold', 'brown', 'black', 'purple', 'pink','seagreen', 'firebrick']
         
         for h, phh in enumerate(plot_hhs):
             self.__abs_wb.plot(self.__pt, self.__hhs[phh].wb_reco, color = colours[h],
-                               label='HH' + str(self.__hhs[phh].hhid))
+                               label='HH' + str(self.__hhs[phh].hhid) + ' dec: ' + str(self.__hhs[phh].decile))
         
-        self.__abs_inc.legend()
+        self.__abs_wb.legend()
         
     def __plot_info_gov(self):
         self.__info_gov.clear()
         self.__info_gov.set_xlim((-1, RECO_PERIOD))
-        self.__info_gov.set_ylim((0, 25000000))
+        self.__info_gov.set_ylim((0, 250000))
         self.__info_gov.set_title('National losses')
         self.__info_gov.set_ylabel('Absolute national loss USD')
         self.__info_gov.set_xlabel('time in years')

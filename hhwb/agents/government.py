@@ -179,7 +179,7 @@ class Government(Agent):
             self._d_wb_t += hh.d_wb_t
         return
     
-    def _set_shock_state(self, L, K, aff_flag, dt):
+    def _set_shock_state(self, L, K, aff_flag):
         """This function calculates the initial damage and the initial loss in income and
            consumption.
         Parameters
@@ -189,7 +189,7 @@ class Government(Agent):
         K : float, optional
             Total national capital stock. The default is 0.
         """
-        self._dt = dt
+        #self._dt = dt
 
         self._vul = L/self.__K
         #self._optimize_reco()

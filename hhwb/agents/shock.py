@@ -131,14 +131,14 @@ class Shock(Agent):
 
         return
 
-    def __get_k_eff_reg(self, hh_reg):
+    # def __get_k_eff_reg(self, hh_reg):
 
-        for reg in hh_reg.region_hhs:
+    #     for reg in hh_reg.region_hhs:
             
-            for hhid in hh_reg.region_hhs[reg]:
+    #         for hhid in hh_reg.region_hhs[reg]:
                 
 
-            #print('hä')
+    #         #print('hä')
 
 
     def __set_aff_hhs(self, n_hhs):
@@ -150,7 +150,7 @@ class Shock(Agent):
             hhs : list
                 list with all households
         """
-        n_aff_hh = 2000
+        n_aff_hh = 5
         sel_hhs = []
 
         while len(sel_hhs) < n_aff_hh:
