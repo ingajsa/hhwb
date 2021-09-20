@@ -45,12 +45,19 @@ class Government(Agent):
         self.__lmbda = None
         self.__tau = None
 
-        self.__L_t = 0
-        
-        self.__k_eff_reco_test = np.array([])
-        self.__inc_reco_test = np.array([])
-        self.__inc_sp_reco_test = np.array([])
-        self.__con_reco_test = np.array([])
+        self.__L_t = 0.
+
+        self._k_eff_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
+        self._k_eff_reco[:] = np.nan
+        self._inc_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
+        self._inc_reco[:] = np.nan
+        self._inc_sp_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
+        self._inc_sp_reco[:] = np.nan
+        self._cons_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
+        self._cons_reco[:] = np.nan
+        self._wb_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
+        self._wb_reco[:] = np.nan
+
 
     @property
     def tax_rate(self):
@@ -68,37 +75,27 @@ class Government(Agent):
     def L_t(self):
         return self._d_k_eff_t
 
-    # @property
-    # def inc_reco_test(self):
-    #     return self.__inc_reco_test
+    @property
+    def inc_reco(self):
+        return self._inc_reco
 
-    # @property
-    # def inc_sp_reco_test(self):
-    #     return self.__inc_sp_reco_test
+    @property
+    def inc_sp_reco(self):
+        return self._inc_sp_reco
 
-    # @property
-    # def cons_reco_test(self):
-    #     return self.__cons_reco_test
+    @property
+    def cons_reco(self):
+        return self._cons_reco
 
-    # @property
-    # def k_eff_reco_test(self):
-    #     return self.__k_eff_reco_test
-    
-    # @property
-    # def d_k_eff_t_test(self):
-    #     return self.__d_k_eff_t_test
+    @property
+    def wb_reco(self):
+        return self._wb_reco
 
-    # @property
-    # def d_inc_t_test(self):
-    #     return self.__d_inc_t_test
+    @property
+    def k_eff_reco(self):
+        return self._k_eff_reco
 
-    # @property
-    # def d_inc_sp_t_test(self):
-    #     return self.__d_inc_sp_t_test
 
-    # @property
-    # def d_con_t_test(self):
-    #     return self.__d_con_t_test
 
     def set_tax_rate(self, reg_hh):
         """

@@ -73,7 +73,7 @@ class HHRegister():
 
         data = pd.read_csv(DATA_DIR + path)
         self.__n_hh = data.shape[0]
-        self.__extract_meta_info(data)
+        self.__extract_meta_info(data, id_col)
 
         hh_list = []
         for hhid in range(self.__n_hh):
@@ -102,19 +102,20 @@ class HHRegister():
             hh = Household(hhid=hh_id, w=hh_w, vul=hh_vul, i_0=hh_inc, i_sp=hh_inc_sp,
                            region=hh_reg, savings=hh_sav, poverty_line=hh_pov_line, decile=hh_dec,
                            isurban=hh_urban, ispoor=hh_poor)
+            print(hhid)
             hh_list.append(hh)
 
         self.__hh_list = hh_list
 
         return
 
-    def __extract_meta_info(self, data):
+    def __extract_meta_info(self, data, id_col):
 
         regions = list(set(data['region']))
 
         for region in regions:
 
-            hhids = list(data.loc[data['region'] == region, 'HHID'])
+            hhids = list(data.loc[data['region'] == region, id_col])
 
             self.__region_hhs.update({region: hhids})
 

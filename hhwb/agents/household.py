@@ -66,6 +66,7 @@ class Household(Agent):
         self.__region = region
         self.__isurban = isurban
         self.__ispoor = ispoor
+        self.__poverty_trap = False
 
         self.__k_eff_0 = None
 
@@ -110,19 +111,48 @@ class Household(Agent):
     def decile(self):
         return self.__decile
 
+    @property
+    def poverty_trap(self):
+        return self.__poverty_trap
+
+    def update_reco(self, t_i=0., L_t=None, K=None):
+        """
+        Parameters
+        ----------
+        t : TYPE
+            DESCRIPTION.
+        t_i : TYPE
+            DESCRIPTION.
+        L_t : TYPE
+            DESCRIPTION.
+        K : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        None.
+    
+        """
+        self._update_k_eff()
+        self._update_income_sp(L_t, K)
+        self._update_income()
+        self._update_consum()
+        self._update_wb()
+        return
+
 
 
     def set_tax_rate(self, tax_rate=0):
         """
         Prepares the recovery process by calculating the tax rate the household's
-        effective capital stock .
+        effective capital stock.
         """
         self.__tax_rate = tax_rate
         self.__k_eff_0 = (self.__inc_0 - self.__inc_sp)/((1-self.__tax_rate)*PI)
 
 
     def _set_shock_state(self, L, K, aff_flag):
-        """This function calculates the initial damage and the initial loss in income and 
+        """This function calculates the initial damage and the initial loss in income and
            consumption.
         Parameters
         ----------
@@ -132,21 +162,28 @@ class Household(Agent):
             Total national capital stock. The default is 0.
         """
         if aff_flag:
-            
+
             self._d_k_eff_t += (self.__k_eff_0 - self._d_k_eff_t) * self._vul
             opt_vul = self._d_k_eff_t / self.__k_eff_0
 
             self._damage.append(self._d_k_eff_t)
-        
+
             if len(self._damage) > 2:
-                self.__optimize_reco(vul=opt_vul)
+                if opt_vul <= 0.95:
+                    self.__optimize_reco(vul=opt_vul)
+                else:
+                    self.__poverty_trap = True
+                    self._d_inc_sp_t = (L/K) * self.__inc_sp
+                    self._d_inc_t = self.__inc_0 - (self.__inc_sp-self._d_inc_sp_t)
+                    self._d_con_t = self.__con_0 - (self.__inc_sp-self._d_inc_sp_t)
+                    self._update_wb()
+                    return
             else:
                 self.__optimize_reco(self._vul)
         self._d_inc_sp_t = (L/K) * self.__inc_sp
         self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
         self._d_con_t = self._d_inc_t + self.__lmbda[self._c_shock] * self._get_reco_fee()
         self._update_wb()
-
         return
 
     def _get_reco_fee(self):
@@ -167,29 +204,40 @@ class Household(Agent):
     def set_k_eff_0(self):
         self._k_eff_0 = (self.__inc_0 - self.__inc_sp)/((1-self.__tax_rate)*PI)
 
+        return
+
     def _update_income_sp(self, L_t, K):
+
         self._d_inc_sp_t = (L_t/K) * self.__inc_sp
         return
 
     def _update_income(self):
-        self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+
+        if not self.__poverty_trap:
+            self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+        else:
+            self._d_inc_t = self.__inc_0 - (self.__inc_sp - self._d_inc_sp_t)
         return
 
     def _update_consum(self):
-        self._d_con_t = self._d_inc_t + self.__lmbda[self._c_shock] * self._get_reco_fee()
+        if not self.__poverty_trap:
+            self._d_con_t = self._d_inc_t + self.__lmbda[self._c_shock] * self._get_reco_fee()
+        else:
+            self._d_con_t = self.__con_0 - self._d_inc_sp_t
         return
 
     def _update_k_eff(self):
-
-        self._d_k_eff_t = self._get_reco_fee()
+        if not self.__poverty_trap:
+            self._d_k_eff_t = self._get_reco_fee()
+        else:
+            self._d_k_eff_t = self._k_eff_0
         return
-    
-    def _update_wb(self):
 
+    def _update_wb(self):
         self._d_wb_t += (self.__con_0**(1 - ETA))/(1 - ETA) *\
                       (1-((1 - (self._d_con_t / self.__con_0))**(1-ETA))) *\
                       np.e**(-RHO * self._t)
-
+        return
 
     def __smooth_with_savings(self):
         """Sets the floor taken from savings to smoothen HH's consumption
@@ -251,6 +299,14 @@ class Household(Agent):
         """
         if vul == 0:
             return
+        
+        if vul == np.nan:
+            
+            print('invalid k_eff')
+            print(self.__hhid)
+            self.__k_eff_0 = (self.__inc_0 - self.__inc_sp)/((1-self.__tax_rate)*PI)
+            print(self.__k_eff_0)
+            vul = 0.3
 
         last_integ = None
         last_lambda = None
@@ -269,9 +325,9 @@ class Household(Agent):
                 
             if last_integ and ((last_integ < 0 and integ > 0) or
                                 (last_integ > 0 and integ < 0)):
-                print('\n Found the Minimum!\n lambda = ', last_lambda,
-                      '--> integ = ', last_integ)
-                print('lambda = ', lmbda, '--> integ = ', integ, '\n')
+                # print('\n Found the Minimum!\n lambda = ', last_lambda,
+                #       '--> integ = ', last_integ)
+                # print('lambda = ', lmbda, '--> integ = ', integ, '\n')
 
                 out = (lmbda+last_lambda)/2
 

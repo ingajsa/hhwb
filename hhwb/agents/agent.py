@@ -17,26 +17,16 @@ class Agent():
         
         self._damage = []
         # share of income_0 coming from social transfers
-        self._d_k_eff_t = None
-        self._d_inc_t = None
-        self._d_inc_sp_t = None
-        self._d_con_t = None
+        self._d_k_eff_t = 0.
+        self._d_inc_t = 0.
+        self._d_inc_sp_t = 0.
+        self._d_con_t = 0.
         self._d_wb_t = 0.
         self._dt = 0.
         self._c_shock = 0
         
         self._aff = []
 
-        self._k_eff_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._k_eff_reco[:] = np.nan
-        self._inc_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._inc_reco[:] = np.nan
-        self._inc_sp_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._inc_sp_reco[:] = np.nan
-        self._cons_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._cons_reco[:] = np.nan
-        self._wb_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._wb_reco[:] = np.nan
 
     @property
     def dt(self):
@@ -77,58 +67,9 @@ class Agent():
     def affected(self):
         return self.__aff
 
-    @property
-    def inc_reco(self):
-        return self._inc_reco
+    def set_vul(self, vul):
+        self._vul = vul
 
-    @property
-    def inc_sp_reco(self):
-        return self._inc_sp_reco
-
-    @property
-    def cons_reco(self):
-        return self._cons_reco
-
-    @property
-    def wb_reco(self):
-        return self._wb_reco
-
-    @property
-    def k_eff_reco(self):
-        return self._k_eff_reco
-
-    def update_reco(self, t_i=0., L_t=None, K=None):
-        """
-        Parameters
-        ----------
-        t : TYPE
-            DESCRIPTION.
-        t_i : TYPE
-            DESCRIPTION.
-        L_t : TYPE
-            DESCRIPTION.
-        K : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-    
-        """
-        self._update_k_eff()
-        self._update_income_sp(L_t, K)
-        self._update_income()
-        self._update_consum()
-        self._update_wb()
-        if t_i % TEMP_RES == 0:
-            self._k_eff_reco[int(t_i/TEMP_RES)] = self._d_k_eff_t
-            self._inc_reco[int(t_i/TEMP_RES)] = self._d_inc_t
-            self._inc_sp_reco[int(t_i/TEMP_RES)] = self._d_inc_sp_t
-            self._cons_reco[int(t_i/TEMP_RES)] = self._d_con_t
-            self._wb_reco[int(t_i/TEMP_RES)] = self._d_wb_t
-        self._t += self._dt
-        return
-    
     def shock(self, reco_period=RECO_PERIOD, temp_res=TEMP_RES, aff_flag=False,
               L=None, K=None, dt=None):
         """This function causes the household to be shocked. The recovery track is set up and the
