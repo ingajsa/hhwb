@@ -90,8 +90,9 @@ class Agent():
             Total national capital stock.
         """
         self._dt = dt
+        print(self._c_shock)
+        print(aff_flag)
         if aff_flag:
-            self._t = 0
             self._c_shock += 1
         self._aff.append(aff_flag)
         #  set the affected state
@@ -112,17 +113,17 @@ class Agent():
         return
 
     
-    def _get_reco_fee(self):
-        """Helperfunction.
-        Parameters
-        ----------
-        t : float, optional
-            DESCRIPTION. The default is 0.
+    # def _get_reco_fee(self):
+    #     """Helperfunction.
+    #     Parameters
+    #     ----------
+    #     t : float, optional
+    #         DESCRIPTION. The default is 0.
 
-        Returns
-        -------
-        TYPE
-            recovery fee.
+    #     Returns
+    #     -------
+    #     TYPE
+    #         recovery fee.
 
-        """
-        return self._damage[self._c_shock] * np.e**(-self._t*self._lmbda)
+    #     """
+    #     return self._damage[self._c_shock] * np.e**(-self._t*self._lmbda)

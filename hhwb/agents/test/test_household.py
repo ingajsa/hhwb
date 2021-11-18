@@ -15,9 +15,9 @@ from hhwb.application.climate_life import ClimateLife
 hh_reg = HHRegister()
 
 ## create HH agents in the register
-hh_reg.set_from_csv(path='/data/FIES_prepared/region_hh_full_pack.csv', id_col='fhhid', weight_col='weight',
+hh_reg.set_from_csv(path='/data/test_data_MWI.csv', id_col='hhid', n_ind = 'n_individuals', weight_col='weight',
                       vul_col='vul', income_col='income', income_sp='income_sp', region='region',
-                      decile='decile', savings='savings', poverty_line='poverty_line',
+                      decile='decile', savings='savings', subsistence_line='subsistence_line',
                       ispoor='ispoor', isurban='isurban')
 
 #hh_reg.set_from_csv()
@@ -31,7 +31,7 @@ gov = Government()
 gov.set_tax_rate(all_hhs)
 
 fld = Shock()
-fld.set_shock_from_csv(hh_reg=all_hhs, k_eff=gov.K-gov.L_t)
+fld.set_random_shock()
 aff_ids = fld.aff_ids
 print('Shocks prepared')
 # print(fld.aff_ids)

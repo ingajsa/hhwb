@@ -8,7 +8,7 @@ Created on Fri Mar 13 21:48:03 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from hhwb.agents.agent import Agent
-from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD, DT
+from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD, DT, SUBS_SAV_RATE
 
 
 AGENT_TYPE = 'HH'
@@ -45,8 +45,8 @@ class Household(Agent):
         @param wbls (float): aggregated wellbeing loss
     """
 
-    def __init__(self, hhid=0, w=1., vul=0.2, i_0=1., i_sp=0.2, region=None,
-                 savings=0., poverty_line=0., decile=None, isurban=1, ispoor=0):
+    def __init__(self, hhid=0, n_inds=1, w=1., vul=0.2, i_0=1., i_sp=0.2, region=None,
+                 savings=0., subsistence_line=0., decile=None, isurban=1, ispoor=0):
         """! constructor"""
 
         Agent.__init__(self, AGENT_TYPE)
@@ -55,22 +55,33 @@ class Household(Agent):
         self.__tau = []
 
         self.__hhid = hhid
+        self.__n_inds = n_inds
         self.__weight = w
         self._vul = vul
         self.__inc_0 = i_0
         self.__inc_sp = i_sp
         self.__con_0 = i_0
         self.__sav_0 = savings
-        self.__poverty_line = poverty_line
+        self.__sav_t = savings
+        self.__subsistence_line = subsistence_line
         self.__decile = decile
         self.__region = region
         self.__isurban = isurban
         self.__ispoor = ispoor
+        self.__recovery_type = 0
         self.__poverty_trap = False
+        self.__recovery_spending = 0.
+        self.__con_smooth = 0
 
         self.__k_eff_0 = None
 
-        self.__wbls = None
+        self.__twb = 0.
+
+        self.__wb_0 = 0.
+
+        self.__wb_t = 0.
+
+        self.__wbls = 0.
 
         #  self.__floor = None
         #  self.__tf = None
@@ -106,6 +117,10 @@ class Household(Agent):
     @property
     def consum_0(self):
         return self.__con_0
+    
+    @property
+    def con_smooth(self):
+        return self.__con_smooth
 
     @property
     def decile(self):
@@ -114,6 +129,14 @@ class Household(Agent):
     @property
     def poverty_trap(self):
         return self.__poverty_trap
+    
+    @property
+    def recovery_type(self):
+        return self.__recovery_type
+
+    @property
+    def subsistence_line(self):
+        return self.__subsistence_line
 
     def update_reco(self, t_i=0., L_t=None, K=None):
         """
@@ -133,6 +156,8 @@ class Household(Agent):
         None.
     
         """
+        if t_i == 49:
+            print(t_i)
         self._update_k_eff()
         self._update_income_sp(L_t, K)
         self._update_income()
@@ -161,33 +186,69 @@ class Household(Agent):
         K : float, optional
             Total national capital stock. The default is 0.
         """
+        print('aff_flag')
+        print(aff_flag)
         if aff_flag:
-
-            self._d_k_eff_t += (self.__k_eff_0 - self._d_k_eff_t) * self._vul
-            opt_vul = self._d_k_eff_t / self.__k_eff_0
-
-            self._damage.append(self._d_k_eff_t)
-
-            if len(self._damage) > 2:
-                if opt_vul <= 0.95:
-                    self.__optimize_reco(vul=opt_vul)
-                else:
-                    self.__poverty_trap = True
-                    self._d_inc_sp_t = (L/K) * self.__inc_sp
-                    self._d_inc_t = self.__inc_0 - (self.__inc_sp-self._d_inc_sp_t)
-                    self._d_con_t = self.__con_0 - (self.__inc_sp-self._d_inc_sp_t)
-                    self._update_wb()
-                    return
+            
+            if (self.__k_eff_0 - self._d_k_eff_t) > 0.0:
+                self._t = 0.
+                self._d_k_eff_t += (self.__k_eff_0 - self._d_k_eff_t) * self._vul
+                opt_vul = self._d_k_eff_t / self.__k_eff_0
+                self._damage.append(self._d_k_eff_t)
+                print('damage')
+                print(self._damage)
+                self.__optimize_reco(vul=opt_vul)
+                
             else:
-                self.__optimize_reco(self._vul)
+                #self.__poverty_trap = True
+                self._damage.append(self._d_k_eff_t)
+                self.__lmbda.append(self.__lmbda[self._c_shock-1])
+                self._d_inc_sp_t = (L/K) * self.__inc_sp
+                self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+                self._d_con_t = self._d_inc_t # + self._check_subs()
+                self._update_wb()
+                return
+            #if not self.__poverty_trap:
         self._d_inc_sp_t = (L/K) * self.__inc_sp
         self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
-        self._d_con_t = self._d_inc_t + self.__lmbda[self._c_shock] * self._get_reco_fee()
+
+        self._set_recovery_path()
+        
+        if self.__recovery_type == 1:
+
+            self.__smooth_with_savings(vul=opt_vul)
+
+        if self.__recovery_type < 3:
+            self._d_con_t = self._d_inc_t + self.__recovery_spending
+        else:
+            self._d_con_t = self._d_inc_t
+
         self._update_wb()
+        #self.__determine_sav_opt()
+            # else:
+            #     self._d_inc_sp_t = (L/K) * self.__inc_sp
+            #     self._d_inc_t = self._d_inc_t - (self.__inc_sp-self._d_inc_sp_t)
+            #     self._d_con_t = self.__con_0/100.#self._d_inc_t
+            #     self._update_wb()
         return
 
     def _get_reco_fee(self):
         """Helperfunction.
+        Parameters
+        ----------
+
+        Returns
+        -------
+        TYPE
+            recovery fee.
+        """
+        
+        dam_0 = self._damage[self._c_shock] * np.e**(-self._t*self.__lmbda[self._c_shock])
+        dam_1 = self._damage[self._c_shock] * np.e**(-(self._t + self._dt)*self.__lmbda[self._c_shock])
+        return dam_0-dam_1
+    
+    def _set_recovery_path(self):
+        """Check for recovery below subsistence level.
         Parameters
         ----------
         t : float, optional
@@ -197,9 +258,110 @@ class Household(Agent):
         -------
         TYPE
             recovery fee.
-
         """
-        return self._damage[self._c_shock] * np.e**(-self._t*self.__lmbda[self._c_shock])
+        # hh not effected --> 0
+        if self._d_k_eff_t == 0:
+            self.__recovery_type = 0
+            self.__recovery_spending = 0.
+            return
+        # optimal_recovery_spending = self._get_reco_fee()
+        # self.__recovery_type = 1
+        # self.__recovery_spending = optimal_recovery_spending
+        # return
+
+        # optimal recovery --> 1
+        # second best recovery --> 2
+        # recovery generally below substistence --> 3
+        # recovery starting below substistence --> 4
+        optimal_recovery_spending = self._get_reco_fee()
+        if self._check_subs(optimal_recovery_spending) > 0:
+            self.__recovery_type = 1
+            self.__recovery_spending = optimal_recovery_spending
+            return
+        elif self._possible_reco() > 0:
+            self.__recovery_type = 2
+            if self._possible_reco() > SUBS_SAV_RATE:
+                self.__recovery_type = 2
+                self.__recovery_spending = self._possible_reco()
+            else:
+                self.__recovery_type = 4
+                self.__recovery_spending = SUBS_SAV_RATE
+            return
+        elif self.__con_0 < self.__subsistence_line:
+            self.__recovery_type = 3
+            self.__recovery_spending = SUBS_SAV_RATE
+            return
+        else:
+            self.__recovery_type = 4
+            self.__recovery_spending = SUBS_SAV_RATE
+            return
+
+    def _check_subs(self, opt_reco):
+
+        cons_level = self.__con_0 - (self._d_inc_t + opt_reco)
+
+        if cons_level >= self.__subsistence_line:
+
+            return opt_reco
+
+        else:
+            return -1
+
+    def _possible_reco(self):
+
+        possible_reco = self.__con_0 - self._d_inc_t - self.__subsistence_line
+
+        if possible_reco > self._d_k_eff_t:
+            possible_reco = self._d_k_eff_t
+
+        if possible_reco > 0:
+            return possible_reco
+        else:
+            return -1
+
+    def _update_reco_spend(self):
+
+        if self.__hhid == 1.0:
+            print('sdl')
+
+        if self.__recovery_type == 0:
+            self.__recovery_spending = 0.
+            return
+
+        if self.__recovery_type == 1:
+            self.__recovery_spending = self._get_reco_fee()
+            return
+
+        if self.__recovery_type == 2:
+
+            opt_vul = self._d_k_eff_t / self.__k_eff_0
+            del self.__lmbda[-1]
+            self.__optimize_reco(vul=opt_vul)
+            del self._damage[-1]
+            self._damage.append(self._d_k_eff_t)
+            self._t = 0.
+            optimal_recovery_spending = self._get_reco_fee()
+            if self._check_subs(optimal_recovery_spending) > 0:
+                self.__recovery_type = 1
+                self.__recovery_spending = optimal_recovery_spending
+            else:
+                self.__recovery_spending = self._possible_reco()
+            return
+
+        if self.__recovery_type == 3:
+            self.__recovery_spending = SUBS_SAV_RATE
+            return
+
+        if self.__recovery_type == 4:
+            if self._possible_reco() > SUBS_SAV_RATE:
+                if self.__hhid == 2.0:
+                    print('sdl')
+                self.__recovery_type = 2
+                self.__recovery_spending = self._possible_reco()
+            else:
+                self.__recovery_spending = SUBS_SAV_RATE
+        return
+
 
     def set_k_eff_0(self):
         self._k_eff_0 = (self.__inc_0 - self.__inc_sp)/((1-self.__tax_rate)*PI)
@@ -213,46 +375,72 @@ class Household(Agent):
 
     def _update_income(self):
 
-        if not self.__poverty_trap:
-            self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
-        else:
-            self._d_inc_t = self.__inc_0 - (self.__inc_sp - self._d_inc_sp_t)
+        #if not self.__poverty_trap:
+        self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+        #else:
+            #self._d_inc_t = self.__inc_0 - (self.__inc_sp - self._d_inc_sp_t)
         return
 
     def _update_consum(self):
-        if not self.__poverty_trap:
-            self._d_con_t = self._d_inc_t + self.__lmbda[self._c_shock] * self._get_reco_fee()
+        #if not self.__poverty_trap:
+        if self.__hhid==1.0:
+            print('sdl')
+        self._update_reco_spend()
+        if self.__recovery_type < 3:
+            self._d_con_t = self._d_inc_t + self.__recovery_spending
         else:
-            self._d_con_t = self.__con_0 - self._d_inc_sp_t
+            self._d_con_t = self._d_inc_t
         return
 
     def _update_k_eff(self):
-        if not self.__poverty_trap:
-            self._d_k_eff_t = self._get_reco_fee()
-        else:
-            self._d_k_eff_t = self._k_eff_0
+        #if not self.__poverty_trap:
+        if self.__hhid == 1.0:
+            print(self._d_inc_t)
+            print(self._d_k_eff_t)
+
+        self._d_k_eff_t -= self.__recovery_spending
+
+        if self._d_k_eff_t < 0:
+            print('pause')
+
         return
 
     def _update_wb(self):
-        self._d_wb_t += (self.__con_0**(1 - ETA))/(1 - ETA) *\
-                      (1-((1 - (self._d_con_t / self.__con_0))**(1-ETA))) *\
-                      np.e**(-RHO * self._t)
-        return
 
-    def __smooth_with_savings(self):
+        self.__twb += self._dt
+        con_0 = self.__con_0/self.__n_inds
+        d_con_t = self._d_con_t/self.__n_inds
+        self.__wb_0 += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
+        self.__wb_t += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
+        self._d_wb_t = (self.__wb_0 - self.__wb_t)#/self.__wb_0
+
+        return
+    
+    def __save(self):
+        if self._d_con_t > 0.95*self.__con_0:
+            self.__sav_t += self.__sav_0/52.
+        return
+    
+    #def __determine_sav_opt(self):
+        
+        # recovery below subsistence 
+        
+        
+
+    def __smooth_with_savings(self, vul=0.3):
         """Sets the floor taken from savings to smoothen HH's consumption
         loss and the time tf when it runs out of savings
         """
 
-        dc0 = self.__k_eff_0 * self.__vul*(PI+self.__lmbda)
+        dc0 = self.__k_eff_0 * vul *(PI+self.__lmbda[self._c_shock])
 
         if dc0 == 0:
-            self.__floor = 0
+            self.__lmbda[self._c_shock] = 0
             self.__tf = T_RNG
-        if self.__lmbda == 0:
+        if self.__lmbda[self._c_shock] == 0:
             self.__floor = int(round(min(dc0, max(dc0-(2/3)
-                                                * self.sav, 0.)), 0))
-            self.__tf = 1.
+                                                * self.sav_t, 0.)), 0))
+            tf = 1.
 
         gamma = dc0
         last_result = None
@@ -261,22 +449,22 @@ class Household(Agent):
 
             beta = gamma/dc0
             result = dc0 * (1-beta) + gamma * np.log(beta)\
-                - self.sav*self.__lmbda
+                - self.__sav_t * self.__lmbda
 
             if (last_result < 0 and result > 0) or\
                (last_result > 0 and result < 0):
 
-                _t = -np.log(beta)/self.__lmbda
+                _t = -np.log(beta)/self.__lmbda[self._c_shock]
 
             if _t < 0:
                 print('RESULT!:\ngamma = ', gamma, '& beta = ',
                       beta, ' & t = ', _t)
-                print('CHECK:', dc0 * np.e**(self.__lmbda * _t),
+                print('CHECK:', dc0 * np.e**(self.__lmbda[self._c_shock] * _t),
                       ' gamma = ', gamma)
 
             if _t >= T_RNG:
                 self.__floor = int(round(min(dc0, max(dc0-(2/3)
-                                                      * self.sav, 0.)), 0.))
+                                                      * self.__sav_t, 0.)), 0.))
                 self.__tf = 1.
 
             self.__floor = int(round(gamma, 0))
@@ -287,6 +475,8 @@ class Household(Agent):
             if gamma <= 0:
                 self.__floor = 0
                 self.__tf = T_RNG
+                
+        return
 
 
     def __optimize_reco(self, vul=0.3):
@@ -330,9 +520,12 @@ class Household(Agent):
                 # print('lambda = ', lmbda, '--> integ = ', integ, '\n')
 
                 out = (lmbda+last_lambda)/2
-
+                print('lambda opt')
+                print(self.__hhid)
                 self.__lmbda.append(out)
+                print(self.__lmbda)
                 self.__tau = np.log(1./0.05) * (1./out)
+                print(self.__tau)
                 return
 
             last_integ = integ

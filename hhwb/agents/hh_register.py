@@ -44,10 +44,10 @@ class HHRegister():
     def region_hhs(self):
         return self.__region_hhs
 
-    def set_from_csv(self, path='/data/test_data.csv', id_col='HHID', weight_col='weight',
-                     vul_col='vul', income_col='income', income_sp='income_sp', region='region',
-                     decile='decile', savings='savings', poverty_line='poverty_line',
-                     ispoor=None, isurban=None):
+    def set_from_csv(self, path='/data/test_data.csv', id_col='HHID', n_ind='n_individuals',
+                     weight_col='weight', vul_col='vul', income_col='income',
+                     income_sp='income_sp', region='region', decile='decile', savings='savings',
+                     subsistence_line='subsistence_line', ispoor=None, isurban=None):
         """
         This function reads the household information from the FIES if it is given in a
         csv file. It provides the full list of household agents.
@@ -64,7 +64,7 @@ class HHRegister():
                           is located
             decile (str): column name of the income decile to which the household belongs
             savings (str): column name of the household's savings'
-            poverty_line (str): name of the column containing the poverty line in the area of the
+            subsistence_line (str): name of the column containing the poverty line in the area of the
                          household
             ispoor (str): name of the column that indicates whether the household is poor
             isurban (str): name of the column that indicates whether the household is located in
@@ -76,9 +76,9 @@ class HHRegister():
         self.__extract_meta_info(data, id_col)
 
         hh_list = []
-        for hhid in range(self.__n_hh):
+        for hh, hhid in enumerate(data[id_col]):
 
-            hh_data = data.iloc[hhid, :]
+            hh_data = data.iloc[hh, :]
             hh_id = hh_data[id_col]
             hh_w = hh_data[weight_col]
             hh_vul = hh_data[vul_col]
@@ -88,7 +88,8 @@ class HHRegister():
             hh_reg = hh_data[region]
             hh_dec = hh_data[decile]
             hh_sav = hh_data[savings]
-            hh_pov_line = hh_data[poverty_line]
+            hh_inds = hh_data[n_ind]
+            hh_pov_line = hh_data[subsistence_line]
             if ispoor:
                 hh_poor = hh_data[ispoor]
             else:
@@ -99,8 +100,8 @@ class HHRegister():
             else:
                 hh_urban = None
 
-            hh = Household(hhid=hh_id, w=hh_w, vul=hh_vul, i_0=hh_inc, i_sp=hh_inc_sp,
-                           region=hh_reg, savings=hh_sav, poverty_line=hh_pov_line, decile=hh_dec,
+            hh = Household(hhid=hh_id, n_inds=hh_inds, w=hh_w, vul=hh_vul, i_0=hh_inc, i_sp=hh_inc_sp,
+                           region=hh_reg, savings=hh_sav, subsistence_line=hh_pov_line, decile=hh_dec,
                            isurban=hh_urban, ispoor=hh_poor)
             print(hhid)
             hh_list.append(hh)

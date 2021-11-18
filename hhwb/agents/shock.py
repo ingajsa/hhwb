@@ -17,23 +17,56 @@ DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os
 
 AGENT_TYPE = 'SH'
 
-REGION_DICT = {15: 'PH150000000',
-               14: 'PH140000000',
-               13: 'PH130000000',
-               1: 'PH010000000',
-               2: 'PH020000000',
-               3: 'PH030000000',
-               41: 'PH040000000',
-               42: 'PH170000000',
-               9: 'PH090000000',
-               5: 'PH050000000',
-               6: 'PH060000000',
-               7: 'PH070000000',
-               8: 'PH080000000',
-               10: 'PH100000000',
-               11: 'PH110000000',
-               12: 'PH120000000',
-               16: 'PH160000000'}
+# REGION_DICT = {15: 'PH150000000',
+#                 14: 'PH140000000',
+#                 13: 'PH130000000',
+#                 1: 'PH010000000',
+#                 2: 'PH020000000',
+#                 3: 'PH030000000',
+#                 41: 'PH040000000',
+#                 42: 'PH170000000',
+#                 9: 'PH090000000',
+#                 5: 'PH050000000',
+#                 6: 'PH060000000',
+#                 7: 'PH070000000',
+#                 8: 'PH080000000',
+#                 10: 'PH100000000',
+#                 11: 'PH110000000',
+#                 12: 'PH120000000',
+#                 16: 'PH160000000'}
+
+REGION_DICT = {312: 'MW312',
+               305: 'MW305',
+               315: 'MW315',
+               310: 'MW310',
+               304: 'MW304',
+               101: 'MW101',
+               208: 'MW208',
+               204: 'MW204',
+               102: 'MW102',
+               201: 'MW201',
+               #106: 'MW106',
+               206: 'MW206',
+               210: 'MW210',
+               302: 'MW302',
+               301: 'MW301',
+               207: 'MW207',
+               308: 'MW308',
+               306: 'MW306',
+               105: 'MW105',
+               107: 'MW107',
+               313: 'MW313',
+               103: 'MW103',
+               202: 'MW202',
+               311: 'MW311',
+               209: 'MW209',
+               203: 'MW203',
+               309: 'MW309',
+               104: 'MW104',
+               205: 'MW205',
+               307: 'MW307',
+               303: 'MW303',
+               314: 'MW314'}
 
 REGIONS = list(REGION_DICT)
 
@@ -60,7 +93,7 @@ class Shock(Agent):
     @property
     def aff_ids(self):
         return self.__aff_ids
-    
+
     @property
     def time_stemps(self):
         return self.__time_stemps
@@ -72,13 +105,13 @@ class Shock(Agent):
     @property
     def L(self):
         return self.__L
-    
+
     @property
     def dt(self):
         return self.__dt
 
 
-    def set_random_shock(self, n_events=2, n_hhs=10):
+    def set_random_shock(self, n_events=5, n_hhs=10):
         """The function selects households randomly and shocks them. (Function is only a
            placeholder for a real Climade intersection.
 
@@ -97,8 +130,8 @@ class Shock(Agent):
 
         return
     
-    def set_shock_from_csv(self, path_haz='/data/hazard_data/haz_data_reg',
-                           path_hh='/data/FIES_prepared/region_hh_full_pack.csv',
+    def set_shock_from_csv(self, path_haz='/data/hazard_data/MWI/haz_data_reg',
+                           path_hh='/data/surveys_prepared/MWI/region_hh_full_pack_MWI.csv',
                            sim_period=31, dist=52, hh_reg=None, k_eff=0):
 
         
@@ -236,16 +269,16 @@ class Shock(Agent):
             hhs : list
                 list with all households
         """
-        n_aff_hh = 200
+        n_aff_hh = 6
         sel_hhs = []
 
-        while len(sel_hhs) < n_aff_hh:
-            hh = random.randint(0, n_hhs-1)
-            if not np.isin(hh, sel_hhs):
-                sel_hhs.append(hh)
-                print('Household appended')
-                
-        return sel_hhs
+        # while len(sel_hhs) < n_aff_hh:
+        #     hh = random.randint(0, n_hhs-1)
+        #     if not np.isin(hh, sel_hhs):
+        #         sel_hhs.append(hh)
+        #         print('Household appended')
+
+        return [0,1,2,3,4,5]
 
         
     def __set_time_stemps(self, n_events=2):

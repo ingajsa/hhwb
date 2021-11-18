@@ -46,6 +46,9 @@ class ClimateLife():
         self.wb_reco = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
         self.wb_reco[:] = np.nan
         
+        self.cons_reco_sm = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        self.cons_reco_sm[:] = np.nan
+        
     @property
     def dt_life(self):
         
@@ -54,7 +57,9 @@ class ClimateLife():
     def __update_reco(self, t_i):
 
         for hh in self.__hhs:
-            hh.update_reco(t_i, self.__gov.L_t, self.__gov.K)
+            
+            if not t_i in self.__shock.time_stemps:
+                hh.update_reco(t_i, self.__gov.L_t, self.__gov.K)
 
             if t_i % TEMP_RES == 0:
                 self.k_eff_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_k_eff_t
@@ -62,6 +67,7 @@ class ClimateLife():
                 self.inc_sp_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_sp_t
                 self.cons_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_con_t
                 self.wb_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_wb_t
+                self.cons_reco_sm[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_wb_t
             hh._t += hh._dt
 
         return
@@ -97,19 +103,18 @@ class ClimateLife():
         n_shock = 0
 
         for t_i in self.__dt_life:
-            
+
             print(t_i)
-            
+
             if t_i in self.__shock.time_stemps:
                 print('shock start')
                 self.__shock.shock(n_shock, self.__gov, self.__hhs, dt_reco)
                 n_shock += 1
                 #dt_s = 0
-
             self.__gov.update_reco(t_i, self.__hhs)
-            
+
             self.__update_reco(t_i)
-                
+
             if t_i in save_spots:
 
                 self.write_output_files(t_i)
@@ -122,19 +127,18 @@ class ClimateLife():
                 #plt.tight_layout()
                 plt.show(block=False)
                 plt.pause(0.01)
-                
         return
 
     def _set_agents(self):
 
         return
     
-    def __get_plot_hhs(self, n_plot_hhs=5):
+    def __get_plot_hhs(self, n_plot_hhs=10):
         
         sort_aff = np.argsort(self.__shock.aff_ids.sum(axis=1))
         plot_hhs = sort_aff[-n_plot_hhs:]
-
-        return plot_hhs
+        #print(plot_hhs)
+        return [0,1,2,3,4,5]
     
     def __plot_info(self, n_plot_hhs=4, plot_hhs=None):
 
@@ -158,7 +162,7 @@ class ClimateLife():
 
         for h, phh in enumerate(plot_hhs):
             self.__abs_cons.plot(self.__pt, self.cons_reco[:,phh], color = colours[h])
-
+            self.__abs_cons.axhline(y=self.__hhs[phh].consum_0 - self.__hhs[phh].subsistence_line, color = colours[h])
 
     def __plot_inc(self, n_plot_hhs=4, plot_hhs=None):
         self.__abs_inc.clear()
@@ -210,13 +214,11 @@ class ClimateLife():
         self.__abs_wb.set_ylabel('')
         #self.__abs_wb.set_xlabel('time in years')
         colours = ['blue', 'red', 'green', 'gold', 'brown', 'black', 'purple', 'pink','seagreen', 'firebrick']
-        
         for h, phh in enumerate(plot_hhs):
             self.__abs_wb.plot(self.__pt, self.wb_reco[:, phh], color = colours[h],
-                               label='HH' + str(self.__hhs[phh].hhid) + ' dec: ' + str(self.__hhs[phh].decile))
-        
+                                label='HH' + str(self.__hhs[phh].hhid) + ' dec: ' + str(self.__hhs[phh].decile))
         self.__abs_wb.legend()
-        
+
     def __plot_info_gov(self):
         self.__info_gov.clear()
         self.__info_gov.set_xlim((-1, RECO_PERIOD))
