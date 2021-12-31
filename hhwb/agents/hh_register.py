@@ -44,7 +44,7 @@ class HHRegister():
     def region_hhs(self):
         return self.__region_hhs
 
-    def set_from_csv(self, path='/data/test_data.csv', id_col='HHID', n_ind='n_individuals',
+    def set_from_csv(self, path='/data/test_data.csv', id_col='fhhid', n_ind='n_individuals',
                      weight_col='weight', vul_col='vul', income_col='income',
                      income_sp='income_sp', region='region', decile='decile', savings='savings',
                      subsistence_line='subsistence_line', ispoor=None, isurban=None):

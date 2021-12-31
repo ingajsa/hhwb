@@ -11,62 +11,64 @@ import numpy as np
 import pandas as pd
 from hhwb.agents.agent import Agent
 from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD
+from datetime import datetime, date
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 
 AGENT_TYPE = 'SH'
 
-# REGION_DICT = {15: 'PH150000000',
-#                 14: 'PH140000000',
-#                 13: 'PH130000000',
-#                 1: 'PH010000000',
-#                 2: 'PH020000000',
-#                 3: 'PH030000000',
-#                 41: 'PH040000000',
-#                 42: 'PH170000000',
-#                 9: 'PH090000000',
-#                 5: 'PH050000000',
-#                 6: 'PH060000000',
-#                 7: 'PH070000000',
-#                 8: 'PH080000000',
-#                 10: 'PH100000000',
-#                 11: 'PH110000000',
-#                 12: 'PH120000000',
-#                 16: 'PH160000000'}
+REGION_DICT = { 
+                15: 'PH150000000',
+                14: 'PH140000000',
+                13: 'PH130000000',
+                1: 'PH010000000',
+                2: 'PH020000000',
+                3: 'PH030000000',
+                41: 'PH040000000',
+                42: 'PH170000000',
+                9: 'PH090000000',
+                5: 'PH050000000',
+                6: 'PH060000000',
+                7: 'PH070000000',
+                8: 'PH080000000',
+                10: 'PH100000000',
+                11: 'PH110000000',
+                12: 'PH120000000',
+                16: 'PH160000000'}
 
-REGION_DICT = {312: 'MW312',
-               305: 'MW305',
-               315: 'MW315',
-               310: 'MW310',
-               304: 'MW304',
-               101: 'MW101',
-               208: 'MW208',
-               204: 'MW204',
-               102: 'MW102',
-               201: 'MW201',
-               #106: 'MW106',
-               206: 'MW206',
-               210: 'MW210',
-               302: 'MW302',
-               301: 'MW301',
-               207: 'MW207',
-               308: 'MW308',
-               306: 'MW306',
-               105: 'MW105',
-               107: 'MW107',
-               313: 'MW313',
-               103: 'MW103',
-               202: 'MW202',
-               311: 'MW311',
-               209: 'MW209',
-               203: 'MW203',
-               309: 'MW309',
-               104: 'MW104',
-               205: 'MW205',
-               307: 'MW307',
-               303: 'MW303',
-               314: 'MW314'}
+# REGION_DICT = {312: 'MW312',
+#                305: 'MW305',
+#                315: 'MW315',
+#                310: 'MW310',
+#                304: 'MW304',
+#                101: 'MW101',
+#                208: 'MW208',
+#                204: 'MW204',
+#                102: 'MW102',
+#                201: 'MW201',
+#                #106: 'MW106',
+#                206: 'MW206',
+#                210: 'MW210',
+#                302: 'MW302',
+#                301: 'MW301',
+#                207: 'MW207',
+#                308: 'MW308',
+#                306: 'MW306',
+#                105: 'MW105',
+#                107: 'MW107',
+#                313: 'MW313',
+#                103: 'MW103',
+#                202: 'MW202',
+#                311: 'MW311',
+#                209: 'MW209',
+#                203: 'MW203',
+#                309: 'MW309',
+#                104: 'MW104',
+#                205: 'MW205',
+#                307: 'MW307',
+#                303: 'MW303',
+#                314: 'MW314'}
 
 REGIONS = list(REGION_DICT)
 
@@ -111,7 +113,7 @@ class Shock(Agent):
         return self.__dt
 
 
-    def set_random_shock(self, n_events=5, n_hhs=10):
+    def set_random_shock(self, n_events=3, n_hhs=10):
         """The function selects households randomly and shocks them. (Function is only a
            placeholder for a real Climade intersection.
 
@@ -130,45 +132,61 @@ class Shock(Agent):
 
         return
     
-    def set_shock_from_csv(self, path_haz='/data/hazard_data/MWI/haz_data_reg',
-                           path_hh='/data/surveys_prepared/MWI/region_hh_full_pack_MWI.csv',
-                           sim_period=31, dist=52, hh_reg=None, k_eff=0):
+    def set_shock_from_csv(self, path_haz='/data/hazard_data/PHL_sat/haz_dat_30as_{}_vul.csv',
+                           path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL.csv',
+                           hh_reg=None, k_eff=0):
 
         
 
         df_hh = pd.read_csv(DATA_DIR + path_hh)
+        
+        
+        for r, reg in enumerate(REGIONS):
 
-        self.__set_time_stemps_disaster_set(path_haz, dist)
+            event_names, weeks = self.__set_time_stemps_disaster_set(path_haz, reg, '-')
+            
+            if r==0:
+                self.__aff_ids = np.zeros((len(df_hh), len(event_names)))
+                self.__time_stemps = weeks
+                
 
-        self.__aff_ids = np.zeros((len(hh_reg), len(self.__time_stemps)))
+            self.__set_aff_hhs_disaster_set(path_haz, path_hh, reg, event_names)
+        
+        shock_df = pd.DataFrame(data=self.__aff_ids, columns=event_names)
+        
+        shock_df['region']=df_hh['region']
+        
+        shock_df.to_csv('/home/insauer/projects/WB_model/hhwb/data/output/shocks/shocks.csv')
 
-        self.__set_aff_hhs_disaster_set(path_haz, df_hh, hh_reg)
 
         return
 
-    def __set_time_stemps_disaster_set(self, path_haz, dist):
+    def __set_time_stemps_disaster_set(self, path_haz, reg, event_identifier):
         
-        df = pd.DataFrame()
-        for reg in REGIONS:
+        start_date = date(2000,1,1)
         
-            shock_series = pd.read_csv(DATA_DIR + path_haz + str(reg) + '.csv')
+        shock_series = pd.read_csv((DATA_DIR + path_haz).format(reg))
             
-            df = df.append(shock_series, ignore_index=True)
+        event_names = [col for col in shock_series.columns if '-' in col]
         
-        events = df.iloc[:, 1:-3].sum(axis=0) != 0
+        dates_list = [datetime.strptime(event, '%Y-%m-%d').date() for event in event_names]
         
-        self.__event_names = np.array(events[events == True].index)
-
-        years = np.array(events[events == True].index).astype(int)
-
-        weaks = (years - years[0])*dist
-
-        add_period_yr = RECO_PERIOD - (years[-1]-years[0])
-
-        pre_period_wk = int(add_period_yr/2)*dist
-
-        self.__time_stemps = weaks + pre_period_wk
-
+        weeks = [np.round((event_date - start_date).days/7) for event_date in dates_list]
+        
+        return event_names, weeks
+    
+    def read_shock(self, path, event_identifier):
+        
+        shock_data = pd.read_csv(path)
+        
+        event_names = [col for col in shock_data.columns if '-' in col]
+        
+        self.__aff_ids = np.array(shock_data[event_names])
+        
+        
+        
+        
+        
         return
     
     # def __set_aff_hhs_disaster_set_damage(self, df_haz, df_hh, hh_reg, k_eff_reg):
@@ -223,30 +241,36 @@ class Shock(Agent):
     #         aff_ids[aff_hhs, ev_id]=1
     #     return
     
-    def __set_aff_hhs_disaster_set(self, path_haz, df_hh_all, hh_reg):
+    def __set_aff_hhs_disaster_set(self, path_haz, path_hh, reg, event_names):
 
-        for reg in REGIONS:
-            print('region')
-            print(reg)
-            df_haz = pd.read_csv(DATA_DIR + path_haz + str(reg) + '.csv')
-            df_hh = df_hh_all.loc[df_hh_all['region'] == reg]
-            for ev_id, event in enumerate(self.__event_names):
-                aff_hhs = []
-                affected_cells = df_haz.loc[df_haz[event] !=0, 'Centroid_ID']
-                print(event)
-                for cell in affected_cells:
-                    hhids = np.array(df_hh.loc[df_hh['Centroid_ID'] == cell, 'fhhid'])
-                    n_hhs = df_hh.loc[df_hh['Centroid_ID'] == cell, 'weight'].sum()
-                    frac = df_haz.loc[(df_haz['Centroid_ID'] == cell), event].values[0]
-                    n_aff_hhs = np.round(frac*n_hhs, 0)
-                    c_n_aff_hhs = 0
-                    while c_n_aff_hhs < n_aff_hhs:
-                        hh_ind = random.randint(0, hhids.shape[0]-1)
-                        if not np.isin(hhids[hh_ind], aff_hhs):
-                            aff_hhs.append(hhids[hh_ind])
-                        c_n_aff_hhs += hh_reg[hhids[hh_ind]].weight
-    
-                self.__aff_ids[aff_hhs, ev_id]=1
+        print('region')
+        print(reg)
+        df_haz = pd.read_csv((DATA_DIR + path_haz).format(reg))
+        df_hh = pd.read_csv(DATA_DIR + path_hh)
+        df_hh = df_hh[df_hh['region'] == reg]
+        for ev_id, event in enumerate(event_names):
+            print(event)
+            aff_hhs = []
+            affected_cells = df_haz.loc[df_haz[event] !=0, 'Centroid_ID']
+            if affected_cells.shape[0]==0:
+                continue
+            for cell in affected_cells:
+                hhids = list(df_hh.loc[df_hh['centroid_id'] == cell, 'fhhid'])
+                
+                n_people = (df_hh.loc[df_hh['centroid_id'] == cell, 'weight'] *\
+                            df_hh.loc[df_hh['centroid_id'] == cell, 'n_individuals']).sum()
+                if n_people == 0.0:
+                    continue
+                frac = df_haz.loc[(df_haz['Centroid_ID'] == cell), event].values[0]
+                n_aff_people = np.round(frac* n_people)
+                c_n_aff_hhs = 0
+                while (c_n_aff_hhs < n_aff_people) and (len(hhids)>0):
+                    hh_ind = random.choice(hhids)
+                    aff_hhs.append(hh_ind)
+                    c_n_aff_hhs += df_hh.loc[df_hh['fhhid']==hh_ind].n_individuals.values[0]
+                    hhids.remove(hh_ind)
+                
+            self.__aff_ids[aff_hhs, ev_id]=1
                 
         return
 
@@ -301,7 +325,7 @@ class Shock(Agent):
 
     def shock(self, event_index, gov, hhs, dt_reco):
         """The function selects households randomly and shocks them. (Function is only a
-           placeholder for a real Climade intersection.
+           placeholder for a real Climade interface.
 
             Parameters
             ----------

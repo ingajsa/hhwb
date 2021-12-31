@@ -24,30 +24,31 @@ class ClimateLife():
         self.__pt = np.array([])
         self.__dt_life = np.array([])
         
-        plt.figure(figsize=(10, 5))
-        plt.suptitle('Household Resilience Model', size=20)
+        #plt.figure(figsize=(10, 5))
+        #plt.suptitle('Household Resilience Model', size=20)
         
-        self.__info_summary = gridspec.GridSpec(3, 3)
-        self.__info_gov = plt.subplot(self.__info_summary[0, :])
-        self.__abs_wb = plt.subplot(self.__info_summary[1, :-1])
-        self.__abs_cons = plt.subplot(self.__info_summary[1, -1])
-        self.__abs_k = plt.subplot(self.__info_summary[-1, -1])
-        self.__abs_inc = plt.subplot(self.__info_summary[-1, 0])
-        self.__abs_inc_sp = plt.subplot(self.__info_summary[-1, -2])
-        
-        self.k_eff_reco = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        # self.__info_summary = gridspec.GridSpec(3, 3)
+        # self.__info_gov = plt.subplot(self.__info_summary[0, :])
+        # self.__abs_wb = plt.subplot(self.__info_summary[1, :-1])
+        # self.__abs_cons = plt.subplot(self.__info_summary[1, -1])
+        # self.__abs_k = plt.subplot(self.__info_summary[-1, -1])
+        # self.__abs_inc = plt.subplot(self.__info_summary[-1, 0])
+        # self.__abs_inc_sp = plt.subplot(self.__info_summary[-1, -2])
+        # save with RECO_PERIOD*DT_STEP/TEMP_RES + 1
+        self.k_eff_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
         self.k_eff_reco[:] = np.nan
-        self.inc_reco = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        self.inc_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
         self.inc_reco[:] = np.nan
-        self.inc_sp_reco = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        self.inc_sp_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
         self.inc_sp_reco[:] = np.nan
-        self.cons_reco = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        self.cons_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
         self.cons_reco[:] = np.nan
-        self.wb_reco = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        self.wb_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
         self.wb_reco[:] = np.nan
         
-        self.cons_reco_sm = np.empty((int(RECO_PERIOD*DT_STEP/TEMP_RES + 1), len(self.__hhs)))
+        self.cons_reco_sm = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
         self.cons_reco_sm[:] = np.nan
+        
         
     @property
     def dt_life(self):
@@ -62,12 +63,12 @@ class ClimateLife():
                 hh.update_reco(t_i, self.__gov.L_t, self.__gov.K)
 
             if t_i % TEMP_RES == 0:
-                self.k_eff_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_k_eff_t
-                self.inc_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_t
-                self.inc_sp_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_sp_t
-                self.cons_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_con_t
-                self.wb_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_wb_t
-                self.cons_reco_sm[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_wb_t
+                self.k_eff_reco[int(t_i), int(hh.hhid)] = hh.d_k_eff_t
+                self.inc_reco[int(t_i), int(hh.hhid)] = hh.d_inc_t
+                self.inc_sp_reco[int(t_i), int(hh.hhid)] = hh.d_inc_sp_t
+                self.cons_reco[int(t_i), int(hh.hhid)] = hh.d_con_t
+                self.wb_reco[int(t_i), int(hh.hhid)] = hh.wb_smooth
+                self.cons_reco_sm[int(t_i), int(hh.hhid)] = hh.con_smooth
             hh._t += hh._dt
 
         return
@@ -83,7 +84,7 @@ class ClimateLife():
         
         self.__dt_life = np.arange(0, RECO_PERIOD*DT_STEP+1)
         
-        save_spots=[260,520,1040, 2080]
+        save_spots=[100, 150, 200, 260,520,1040, 2080]
 
         print('Tax rate: ' + str(self.__gov))
         print('Total expenditure on social programs: ' + str(self.__gov.sp_cost))
@@ -121,12 +122,12 @@ class ClimateLife():
 
             #dt_s += 1
 
-            self.__plot_info(n_plot_hhs=5, plot_hhs=plot_ids)
+            # self.__plot_info(n_plot_hhs=5, plot_hhs=plot_ids)
 
-            if t_i%12 ==0:
-                #plt.tight_layout()
-                plt.show(block=False)
-                plt.pause(0.01)
+            # if t_i%12 ==0:
+            #     #plt.tight_layout()
+            #     plt.show(block=False)
+            #     plt.pause(0.01)
         return
 
     def _set_agents(self):
@@ -138,7 +139,7 @@ class ClimateLife():
         sort_aff = np.argsort(self.__shock.aff_ids.sum(axis=1))
         plot_hhs = sort_aff[-n_plot_hhs:]
         #print(plot_hhs)
-        return [0,1,2,3,4,5]
+        return [0, 1, 5, 7]
     
     def __plot_info(self, n_plot_hhs=4, plot_hhs=None):
 
@@ -162,6 +163,7 @@ class ClimateLife():
 
         for h, phh in enumerate(plot_hhs):
             self.__abs_cons.plot(self.__pt, self.cons_reco[:,phh], color = colours[h])
+            # self.__abs_cons.plot(self.__pt, self.cons_reco_sm[:,phh], color = colours[h])
             self.__abs_cons.axhline(y=self.__hhs[phh].consum_0 - self.__hhs[phh].subsistence_line, color = colours[h])
 
     def __plot_inc(self, n_plot_hhs=4, plot_hhs=None):
@@ -217,6 +219,8 @@ class ClimateLife():
         for h, phh in enumerate(plot_hhs):
             self.__abs_wb.plot(self.__pt, self.wb_reco[:, phh], color = colours[h],
                                 label='HH' + str(self.__hhs[phh].hhid) + ' dec: ' + str(self.__hhs[phh].decile))
+            # self.__abs_wb.plot(self.__pt, self.wb_reco_sm[:, phh], color = colours[h],
+            #                     label='HH' + str(self.__hhs[phh].hhid) + ' dec: ' + str(self.__hhs[phh].decile))
         self.__abs_wb.legend()
 
     def __plot_info_gov(self):
@@ -238,7 +242,7 @@ class ClimateLife():
     
     def write_output_files(self, t_i):
         
-        path = '/home/insauer/projects/WB_model/hhwb/data/ouput/'
+        path = '/home/insauer/projects/WB_model/hhwb/data/output/'
 
         k_eff = pd.DataFrame(data = self.k_eff_reco)
         k_eff.to_csv(path + 'k_eff.csv')
@@ -255,5 +259,8 @@ class ClimateLife():
         cons = pd.DataFrame(data = self.cons_reco)
         cons.to_csv(path + 'cons.csv')
         del cons
+        cons_sav = pd.DataFrame(data = self.cons_reco_sm)
+        cons_sav.to_csv(path + 'cons_sav.csv')
+        del cons_sav
 
         return

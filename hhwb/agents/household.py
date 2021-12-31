@@ -8,7 +8,7 @@ Created on Fri Mar 13 21:48:03 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from hhwb.agents.agent import Agent
-from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD, DT, SUBS_SAV_RATE
+from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD, DT, SUBS_SAV_RATE, OPT_DYN
 
 
 AGENT_TYPE = 'HH'
@@ -72,20 +72,22 @@ class Household(Agent):
         self.__poverty_trap = False
         self.__recovery_spending = 0.
         self.__con_smooth = 0
+        
+        self.__tf = -0.01
+        self.__floor = 0.
 
         self.__k_eff_0 = None
-
         self.__twb = 0.
-
         self.__wb_0 = 0.
-
         self.__wb_t = 0.
-
+        self.__con_smooth = 0.
+        self.__wb_smooth = 0.
+        self.__wb_0_sm = 0.
+        self.__wb_t_sm = 0.
         self.__wbls = 0.
-
+        self.__cnt_ts = 0
         #  self.__floor = None
         #  self.__tf = None
-
     @property
     def hhid(self):
         return self.__hhid
@@ -121,6 +123,10 @@ class Household(Agent):
     @property
     def con_smooth(self):
         return self.__con_smooth
+    
+    @property
+    def wb_smooth(self):
+        return self.__wb_smooth
 
     @property
     def decile(self):
@@ -163,6 +169,9 @@ class Household(Agent):
         self._update_income()
         self._update_consum()
         self._update_wb()
+        self.__update_savings()
+        # if self.__recovery_type == 1:
+        #     self._update_wb_sav()
         return
 
 
@@ -204,26 +213,50 @@ class Household(Agent):
                 self._damage.append(self._d_k_eff_t)
                 self.__lmbda.append(self.__lmbda[self._c_shock-1])
                 self._d_inc_sp_t = (L/K) * self.__inc_sp
-                self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+                self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/52.
                 self._d_con_t = self._d_inc_t # + self._check_subs()
                 self._update_wb()
                 return
             #if not self.__poverty_trap:
         self._d_inc_sp_t = (L/K) * self.__inc_sp
-        self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+        if self.__hhid == 4.0:
+            print('nnnn')
+        self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/52.
 
         self._set_recovery_path()
         
         if self.__recovery_type == 1:
-
-            self.__smooth_with_savings(vul=opt_vul)
-
-        if self.__recovery_type < 3:
+            self.__cnt_ts += 1
             self._d_con_t = self._d_inc_t + self.__recovery_spending
+            self.__smooth_with_savings_1()
+            
+            self.__con_smooth = self.__floor
+            
+        elif self.__recovery_type == 2:
+            self._d_con_t = self._d_inc_t
+            self.__smooth_with_savings_2(vul=opt_vul)
+            self.__con_smooth = self.__floor
+        
+        elif self.__recovery_type == 3:
+            self._d_con_t = self._d_inc_t
+            self.__smooth_with_savings_3(vul=opt_vul)
+            self.__con_smooth = self.__floor
+        
+        elif self.__recovery_type == 4:
+            self._d_con_t = self._d_inc_t
+            self.__smooth_with_savings_3(vul=opt_vul)
+            self.__con_smooth = self.__floor
+
+        if self.__recovery_type == 1:
+            self._d_con_t = self._d_inc_t + self.__recovery_spending
+        elif self.__recovery_type == 2:
+            self._d_con_t = self._d_inc_t + self._possible_reco()
         else:
             self._d_con_t = self._d_inc_t
 
         self._update_wb()
+        # if self.__recovery_type == 1:
+        #     self._update_wb_sav()
         #self.__determine_sav_opt()
             # else:
             #     self._d_inc_sp_t = (L/K) * self.__inc_sp
@@ -232,19 +265,21 @@ class Household(Agent):
             #     self._update_wb()
         return
 
-    def _get_reco_fee(self):
-        """Helperfunction.
-        Parameters
-        ----------
-
+    def _get_reco_fee(self, t1=None, t2=None):
+        """
         Returns
         -------
         TYPE
             recovery fee.
         """
-        
-        dam_0 = self._damage[self._c_shock] * np.e**(-self._t*self.__lmbda[self._c_shock])
-        dam_1 = self._damage[self._c_shock] * np.e**(-(self._t + self._dt)*self.__lmbda[self._c_shock])
+        if not t1:
+            t1 = self._t
+
+        if not t2:
+            t2 = self._t + self._dt
+
+        dam_0 = self._damage[self._c_shock] * np.e**(-t1*self.__lmbda[self._c_shock])
+        dam_1 = self._damage[self._c_shock] * np.e**(-t2*self.__lmbda[self._c_shock])
         return dam_0-dam_1
     
     def _set_recovery_path(self):
@@ -273,6 +308,9 @@ class Household(Agent):
         # second best recovery --> 2
         # recovery generally below substistence --> 3
         # recovery starting below substistence --> 4
+        
+        if self.__hhid==0.0:
+            print('kkk')
         optimal_recovery_spending = self._get_reco_fee()
         if self._check_subs(optimal_recovery_spending) > 0:
             self.__recovery_type = 1
@@ -280,13 +318,10 @@ class Household(Agent):
             return
         elif self._possible_reco() > 0:
             self.__recovery_type = 2
-            if self._possible_reco() > SUBS_SAV_RATE:
-                self.__recovery_type = 2
-                self.__recovery_spending = self._possible_reco()
-            else:
-                self.__recovery_type = 4
-                self.__recovery_spending = SUBS_SAV_RATE
+            self.__recovery_spending = self._possible_reco() + SUBS_SAV_RATE
+
             return
+
         elif self.__con_0 < self.__subsistence_line:
             self.__recovery_type = 3
             self.__recovery_spending = SUBS_SAV_RATE
@@ -321,7 +356,7 @@ class Household(Agent):
 
     def _update_reco_spend(self):
 
-        if self.__hhid == 1.0:
+        if self.__hhid == 4.0:
             print('sdl')
 
         if self.__recovery_type == 0:
@@ -329,7 +364,18 @@ class Household(Agent):
             return
 
         if self.__recovery_type == 1:
-            self.__recovery_spending = self._get_reco_fee()
+            if OPT_DYN:
+                opt_vul = self._d_k_eff_t / self.__k_eff_0
+                self._t = 0.
+                del self.__lmbda[-1]
+                self.__optimize_reco(vul=opt_vul)
+                self.__cnt_ts += 1
+                del self._damage[-1]
+                self._damage.append(self._d_k_eff_t)
+                self.__recovery_spending = self._get_reco_fee()
+                self.__smooth_with_savings_1()
+            else:
+                self.__recovery_spending = self._get_reco_fee()
             return
 
         if self.__recovery_type == 2:
@@ -343,23 +389,42 @@ class Household(Agent):
             optimal_recovery_spending = self._get_reco_fee()
             if self._check_subs(optimal_recovery_spending) > 0:
                 self.__recovery_type = 1
+                self.__smooth_with_savings_1()
                 self.__recovery_spending = optimal_recovery_spending
+                self.__con_smooth = self.__floor
             else:
-                self.__recovery_spending = self._possible_reco()
+                self.__recovery_spending = self._possible_reco() + SUBS_SAV_RATE
+                self.__smooth_with_savings_2(vul=opt_vul)
             return
 
         if self.__recovery_type == 3:
-            self.__recovery_spending = SUBS_SAV_RATE
+            if self._d_k_eff_t == 0:
+                self.__recovery_type = 0
+                self.__recovery_spending = 0.
+                return
+            if self._d_k_eff_t < SUBS_SAV_RATE:
+                self.__recovery_spending = self._d_k_eff_t
+            else:
+                self.__recovery_spending = SUBS_SAV_RATE
             return
 
         if self.__recovery_type == 4:
-            if self._possible_reco() > SUBS_SAV_RATE:
-                if self.__hhid == 2.0:
+            if self._possible_reco() > 0:
+                if self.__hhid == 0.0:
                     print('sdl')
+                self._t = 0.
                 self.__recovery_type = 2
-                self.__recovery_spending = self._possible_reco()
+                self.__recovery_spending = self._possible_reco() + SUBS_SAV_RATE
+                self.__smooth_with_savings_2()
             else:
-                self.__recovery_spending = SUBS_SAV_RATE
+                if self._d_k_eff_t == 0:
+                    self.__recovery_type = 0
+                    self.__recovery_spending = 0.
+                    return
+                if self._d_k_eff_t < SUBS_SAV_RATE:
+                    self.__recovery_spending = self._d_k_eff_t
+                else:
+                    self.__recovery_spending = SUBS_SAV_RATE
         return
 
 
@@ -370,26 +435,41 @@ class Household(Agent):
 
     def _update_income_sp(self, L_t, K):
 
-        self._d_inc_sp_t = (L_t/K) * self.__inc_sp
+        self._d_inc_sp_t = ((L_t/K) * self.__inc_sp)/52.
         return
 
     def _update_income(self):
 
         #if not self.__poverty_trap:
-        self._d_inc_t = (1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t
+        self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/52.
         #else:
             #self._d_inc_t = self.__inc_0 - (self.__inc_sp - self._d_inc_sp_t)
         return
 
     def _update_consum(self):
         #if not self.__poverty_trap:
-        if self.__hhid==1.0:
+        if (self.__hhid==4.0):
             print('sdl')
         self._update_reco_spend()
-        if self.__recovery_type < 3:
+        if self.__recovery_type < 2:
             self._d_con_t = self._d_inc_t + self.__recovery_spending
+            if self.__recovery_type == 1:
+                if self._t <= self.__tf:
+                    self.__con_smooth = self.__floor
+                else:
+                    self.__con_smooth = self._d_con_t
+        elif self.__recovery_type == 2:
+            self._d_con_t = self._d_inc_t + self._possible_reco()
+            if self._t <= self.__tf:
+                self.__con_smooth = self.__floor
+            else:
+                self.__con_smooth = self._d_con_t
         else:
             self._d_con_t = self._d_inc_t
+            if self._t <= self.__tf:
+                self.__con_smooth = self.__con_smooth
+            else:
+                self.__con_smooth = self._d_con_t
         return
 
     def _update_k_eff(self):
@@ -416,9 +496,22 @@ class Household(Agent):
 
         return
     
-    def __save(self):
-        if self._d_con_t > 0.95*self.__con_0:
+    def _update_wb_sav(self):
+        con_0 = self.__con_0/self.__n_inds
+        d_con_t = self.__con_smooth/self.__n_inds
+        self.__wb_0_sm += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
+        self.__wb_t_sm += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
+        self.__wb_smooth = (self.__wb_0 - self.__wb_t)#/self.__wb_0
+
+        return
+    
+    def __update_savings(self):
+        if self.__hhid==0.0:
+            print('sdl')
+        if self._d_con_t < 0.05*self.__con_0/52.:
             self.__sav_t += self.__sav_0/52.
+        elif (self._t <= self.__tf) & (self.__sav_t> 0.0):
+            self.__sav_t -= self._d_con_t - self.__floor
         return
     
     #def __determine_sav_opt(self):
@@ -427,20 +520,22 @@ class Household(Agent):
         
         
 
-    def __smooth_with_savings(self, vul=0.3):
+    def __smooth_with_savings_0(self, vul=0.3):
         """Sets the floor taken from savings to smoothen HH's consumption
         loss and the time tf when it runs out of savings
         """
 
-        dc0 = self.__k_eff_0 * vul *(PI+self.__lmbda[self._c_shock])
+        dc0 = self.__k_eff_0 * vul * (PI+self.__lmbda[self._c_shock])
 
         if dc0 == 0:
-            self.__lmbda[self._c_shock] = 0
+            self.__floor = 0
             self.__tf = T_RNG
+            return
         if self.__lmbda[self._c_shock] == 0:
             self.__floor = int(round(min(dc0, max(dc0-(2/3)
                                                 * self.sav_t, 0.)), 0))
-            tf = 1.
+            self.__tf = 1.
+            return
 
         gamma = dc0
         last_result = None
@@ -448,34 +543,171 @@ class Household(Agent):
         while True:
 
             beta = gamma/dc0
-            result = dc0 * (1-beta) + gamma * np.log(beta)\
-                - self.__sav_t * self.__lmbda
+            result = dc0 * (1-beta) + gamma * np.log(beta) - self.__sav_t * self.__lmbda[self._c_shock]
+            try:
+                if (last_result < 0 and result > 0) or\
+                   (last_result > 0 and result < 0):
+    
+                    _t = -np.log(beta)/self.__lmbda[self._c_shock]
+    
+                    if _t < 0:
+                        print('RESULT!:\ngamma = ', gamma, '& beta = ',
+                              beta, ' & t = ', _t)
+                        print('CHECK:', dc0 * np.e**(self.__lmbda[self._c_shock] * _t),
+                              ' gamma = ', gamma)
+        
+                    if _t >= T_RNG:
+                        self.__floor = int(round(min(dc0, max(dc0-(2/3)
+                                                              * self.__sav_t, 0.)), 0.))
+                        self.__tf = 1.
+                        return
 
-            if (last_result < 0 and result > 0) or\
-               (last_result > 0 and result < 0):
+                    self.__floor = int(round(gamma, 0))
+                    self.__tf = round(_t, 3)
+                    return
 
-                _t = -np.log(beta)/self.__lmbda[self._c_shock]
-
-            if _t < 0:
-                print('RESULT!:\ngamma = ', gamma, '& beta = ',
-                      beta, ' & t = ', _t)
-                print('CHECK:', dc0 * np.e**(self.__lmbda[self._c_shock] * _t),
-                      ' gamma = ', gamma)
-
-            if _t >= T_RNG:
-                self.__floor = int(round(min(dc0, max(dc0-(2/3)
-                                                      * self.__sav_t, 0.)), 0.))
-                self.__tf = 1.
-
-            self.__floor = int(round(gamma, 0))
-            self.__tf = round(_t, 3)
+            except: pass
 
             last_result = result
             gamma -= 0.01 * dc0
             if gamma <= 0:
                 self.__floor = 0
                 self.__tf = T_RNG
-                
+                return
+        return
+
+    def __smooth_with_savings_1(self):
+        """Sets the floor taken from savings to smoothen HH's consumption
+        loss and the time tf when it runs out of savings
+        """
+
+        dc0 = self._d_con_t
+        
+        if self.__sav_t <= 0:
+            self.__floor = self._d_con_t
+            self.__tf = 0.
+            return
+        
+        if self.__sav_t > dc0/(self.__lmbda[self._c_shock]/52.):
+            self.__floor = 0.
+            self.__tf = 40.
+            return
+        
+        f = 0.01
+        last_result = (1/(self.__lmbda[self._c_shock]/52.)) * (dc0-f*(np.log(dc0) - np.log(f)+1)) - self.__sav_t
+        
+        f += 0.1
+
+        while f<dc0:
+
+            result = (1/(self.__lmbda[self._c_shock]/52.)) *(dc0-f*(np.log(dc0) -np.log(f)+1)) - self.__sav_t
+
+            if (last_result < 0 and result > 0) or\
+               (last_result > 0 and result < 0):
+                       
+                self.__floor = f
+                self.__tf = -(1/(self.__lmbda[self._c_shock])) * np.log(f/dc0)
+                return
+            else:
+                last_result = result
+                f += 0.1
+        if self.__hhid==0.0:
+            print("kslsk")
+        self.__floor = 0.
+        self.__tf = 0.
+
+        return
+    
+    def __smooth_with_savings_2(self, vul=0.3):
+        """Sets the floor taken from savings to smoothen HH's consumption
+        loss and the time tf when it runs out of savings
+        """
+        
+        if self.__hhid==0.0:
+            print("kslsk")
+
+        if self.__sav_t <= 0:
+            self.__floor = self._d_con_t
+            self.__tf = 0.0
+            return
+
+        dc0 = self._d_con_t
+
+        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*self.__recovery_spending*PI/52.))
+
+        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*self.__recovery_spending*PI/52.))
+
+        if f_1 <=dc0:
+            self.__floor = f_1
+
+        elif f_2 <=dc0:
+            self.__floor = f_2
+
+        else:
+            raise ValueError
+
+        self.__tf = ((dc0 - self.__floor)/(self.__recovery_spending*PI/52.)/52)
+
+        if self.__floor < 0:
+            self.__tf = ((dc0 - 0.)/(self.__recovery_spending*PI/52.)/52)
+            self.__floor = 0.
+
+        return
+    
+    def __smooth_with_savings_3(self, vul=0.3):
+        """Sets the floor taken from savings to smoothen HH's consumption
+        loss and the time tf when it runs out of savings
+        """
+
+        dc0 = self._d_con_t
+        
+        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        
+        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        
+        if f_1 <=dc0:
+            self.__floor = f_1
+        
+        elif f_2 <=dc0:
+            self.__floor = f_2
+        
+        else:
+            raise ValueError
+
+        self.__tf = ((dc0 - self.__floor)/(SUBS_SAV_RATE*PI/52.)/52)
+
+        if self.__floor < 0:
+            self.__tf = ((dc0 - 0.)/(SUBS_SAV_RATE*PI/52.)/52)
+            self.__floor = 0.
+
+        return
+    
+    def __smooth_with_savings_4(self, vul=0.3):
+        """Sets the floor taken from savings to smoothen HH's consumption
+        loss and the time tf when it runs out of savings
+        """
+
+        dc0 = self._d_con_t
+
+
+        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+
+        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        if f_1 <=dc0:
+            self.__floor = f_1
+
+        elif f_2 <=dc0:
+            self.__floor = f_2
+
+        else:
+            raise ValueError
+
+        self.__tf = ((dc0 - self.__floor)/(SUBS_SAV_RATE*PI/52.)/52.)
+
+        if self.__floor < 0:
+            self.__tf = ((dc0 - 0.)/(SUBS_SAV_RATE*PI/52.)/52)
+            self.__floor = 0.
+
         return
 
 
@@ -510,9 +742,26 @@ class Household(Agent):
         while True:
 
             integ = 0.0
-            for dt in np.linspace(0, T_RNG, DT_STEP*T_RNG):
-                integ += np.e**(-dt * (RHO + lmbda)) * ((PI + lmbda) * dt - 1) * (PI - (PI + lmbda) * vul * np.e**(-lmbda * dt))**(-ETA)
+            
+            # if self.__cnt_ts == 0:
+            
+            #     for dt in np.linspace(0, T_RNG, DT_STEP*T_RNG):
+            #         integ += np.e**(-dt * (RHO + lmbda)) * ((PI + lmbda) * dt - 1) * (PI - (PI + lmbda) * vul * np.e**(-lmbda * dt))**(-ETA)
+            # else:
                 
+            #     for dt in np.linspace(0, T_RNG, DT_STEP*T_RNG)[:-self.__cnt_ts]:
+            #         integ += np.e**(-dt * (RHO + lmbda)) * ((PI + lmbda) * dt - 1) * (PI - (PI + lmbda) * vul * np.e**(-lmbda * dt))**(-ETA)
+            
+            if self.__cnt_ts == 0:
+            
+                for dt in np.linspace(0, T_RNG, DT_STEP*T_RNG):
+                    integ += np.e**(-dt * lmbda) * ((PI + lmbda) * dt - 1) 
+            else:
+                
+                for dt in np.linspace(0, T_RNG, DT_STEP*T_RNG)[:-self.__cnt_ts]:
+                    integ += np.e**(-dt * lmbda) * ((PI + lmbda) * dt - 1) 
+            #print(integ)
+            
             if last_integ and ((last_integ < 0 and integ > 0) or
                                 (last_integ > 0 and integ < 0)):
                 # print('\n Found the Minimum!\n lambda = ', last_lambda,
@@ -520,12 +769,11 @@ class Household(Agent):
                 # print('lambda = ', lmbda, '--> integ = ', integ, '\n')
 
                 out = (lmbda+last_lambda)/2
-                print('lambda opt')
-                print(self.__hhid)
+
                 self.__lmbda.append(out)
-                print(self.__lmbda)
+
                 self.__tau = np.log(1./0.05) * (1./out)
-                print(self.__tau)
+
                 return
 
             last_integ = integ
@@ -533,7 +781,7 @@ class Household(Agent):
                 assert(False)
 
             last_lambda = lmbda
-            lmbda += 0.01
+            lmbda += 0.001
             c+=1
 
     def plot_reco_trajec(self, timeframe=40, pred=5):

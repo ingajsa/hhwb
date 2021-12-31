@@ -14,13 +14,11 @@ from hhwb.application.climate_life import ClimateLife
 
 hh_reg = HHRegister()
 
-## create HH agents in the register
-hh_reg.set_from_csv(path='/data/test_data_MWI.csv', id_col='hhid', n_ind = 'n_individuals', weight_col='weight',
+# create HH agents in the register
+hh_reg.set_from_csv(path='/data/surveys_prepared/PHL/region_hh_full_pack_PHL.csv', id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
                       vul_col='vul', income_col='income', income_sp='income_sp', region='region',
                       decile='decile', savings='savings', subsistence_line='subsistence_line',
                       ispoor='ispoor', isurban='isurban')
-
-#hh_reg.set_from_csv()
 
 # print('Households registered')
 # ## get number of registered households
@@ -31,8 +29,8 @@ gov = Government()
 gov.set_tax_rate(all_hhs)
 
 fld = Shock()
-fld.set_random_shock()
-aff_ids = fld.aff_ids
+fld.read_shock('/home/insauer/projects/WB_model/hhwb/data/output/shocks/shocks.csv', '-')
+
 print('Shocks prepared')
 # print(fld.aff_ids)
 cl = ClimateLife(all_hhs, fld, gov)

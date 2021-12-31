@@ -31,9 +31,11 @@ DT_STEP = 52
 TEMP_RES = 4
 """Temporal resolution after recovery in weeks
    (value currently copied from the original model)"""
-RECO_PERIOD = 40
+RECO_PERIOD = 20
 """Time frame after first disaster in years where reconstruction is modeled (in years)"""
 DT = RECO_PERIOD / (RECO_PERIOD * DT_STEP)
 """Time differnece in years between two time stemps"""
-SUBS_SAV_RATE = 4941/52.
-
+SUBS_SAV_RATE = 1043/52. #4941/52.
+"""Minimum recoery and savings rate"""
+OPT_DYN = False
+"""Savings and recovery optimization in each timestemp"""
