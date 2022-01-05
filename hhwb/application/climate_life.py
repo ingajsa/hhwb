@@ -9,10 +9,14 @@ Created on Sat Jun 27 21:19:13 2020
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
+import multiprocessing as mp
+from functools import partial
 import time
 from hhwb.agents.government import Government
 from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD
 import pandas as pd
+
+
 
 class ClimateLife():
 
@@ -54,28 +58,52 @@ class ClimateLife():
     def dt_life(self):
         
         return self.__dt_life
+    @staticmethod
+    def update_reco(hh, gov):
+        hh.update_reco(gov.L_t, gov.K)
+        
+        return hh
     
-    def __update_reco(self, t_i):
+    # def __update_reco(self, t_i):
+
+    #     for hh in self.__hhs:
+            
+    #         if not t_i in self.__shock.time_stemps:
+    #             hh.update_reco(t_i, self.__gov.L_t, self.__gov.K)
+
+    #         if t_i % TEMP_RES == 0:
+    #             self.k_eff_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_k_eff_t
+    #             self.inc_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_t
+    #             self.inc_sp_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_sp_t
+    #             self.cons_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_con_t
+    #             self.wb_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.wb_smooth
+    #             self.cons_reco_sm[int(t_i/TEMP_RES), int(hh.hhid)] = hh.con_smooth
+    #         hh._t += hh._dt
+
+    #     return
+    
+    def __update_records(self, t_i):
 
         for hh in self.__hhs:
-            
-            if not t_i in self.__shock.time_stemps:
-                hh.update_reco(t_i, self.__gov.L_t, self.__gov.K)
 
             if t_i % TEMP_RES == 0:
-                self.k_eff_reco[int(t_i), int(hh.hhid)] = hh.d_k_eff_t
-                self.inc_reco[int(t_i), int(hh.hhid)] = hh.d_inc_t
-                self.inc_sp_reco[int(t_i), int(hh.hhid)] = hh.d_inc_sp_t
-                self.cons_reco[int(t_i), int(hh.hhid)] = hh.d_con_t
-                self.wb_reco[int(t_i), int(hh.hhid)] = hh.wb_smooth
-                self.cons_reco_sm[int(t_i), int(hh.hhid)] = hh.con_smooth
+                self.k_eff_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_k_eff_t
+                self.inc_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_t
+                self.inc_sp_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_inc_sp_t
+                self.cons_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.d_con_t
+                self.wb_reco[int(t_i/TEMP_RES), int(hh.hhid)] = hh.wb_smooth
+                self.cons_reco_sm[int(t_i/TEMP_RES), int(hh.hhid)] = hh.con_smooth
             hh._t += hh._dt
 
         return
+    
 
-    def start(self):
+    def start(self, work_path='/home/insauer/projects/WB_model/hhwb',
+              result_path='/data/output/', cores=1):
         
         print('Life started')
+        
+        
         
         pt = np.linspace(0, RECO_PERIOD, RECO_PERIOD*DT_STEP+1)
         dt_reco = np.diff(pt)[0]
@@ -84,7 +112,7 @@ class ClimateLife():
         
         self.__dt_life = np.arange(0, RECO_PERIOD*DT_STEP+1)
         
-        save_spots=[100, 150, 200, 260,520,1040, 2080]
+        save_spots=[30, 60, 100, 150,200, 234]
 
         print('Tax rate: ' + str(self.__gov))
         print('Total expenditure on social programs: ' + str(self.__gov.sp_cost))
@@ -93,15 +121,17 @@ class ClimateLife():
         for hh in self.__hhs:
             print('Capital stock of HH ' + str(int(hh.hhid))+': '+str(hh.k_eff_0))
 
-
-        plot_ids = self.__get_plot_hhs()
+        
+        #plot_ids = self.__get_plot_hhs()
 
         #gov.shock()
 
-        dt_s = 0
+        #dt_s = 0
 
-        plt.ion()
+        #plt.ion()
         n_shock = 0
+        
+        
 
         for t_i in self.__dt_life:
 
@@ -109,16 +139,23 @@ class ClimateLife():
 
             if t_i in self.__shock.time_stemps:
                 print('shock start')
-                self.__shock.shock(n_shock, self.__gov, self.__hhs, dt_reco)
+                self.__hhs = self.__shock.shock(n_shock, self.__gov, self.__hhs, dt_reco, cores)
                 n_shock += 1
                 #dt_s = 0
             self.__gov.update_reco(t_i, self.__hhs)
+            
+            if not t_i in self.__shock.time_stemps:
+                p = mp.Pool(cores)
+                prod_x=partial(ClimateLife.update_reco, gov=self.__gov)
+                self.__hhs=p.map(prod_x, self.__hhs)
+                p.close()
+                p.join()
 
-            self.__update_reco(t_i)
+            self.__update_records(t_i)
 
             if t_i in save_spots:
 
-                self.write_output_files(t_i)
+                self.write_output_files(t_i, result_path)
 
             #dt_s += 1
 
@@ -240,27 +277,28 @@ class ClimateLife():
                                label='loss in national consumption', alpha = 0.5)
         self.__info_gov.legend()
     
-    def write_output_files(self, t_i):
+    def write_output_files(self, t_i, result_path):
         
-        path = '/home/insauer/projects/WB_model/hhwb/data/output/'
+        #path = '/home/insauer/projects/WB_model/hhwb/data/output/'
 
         k_eff = pd.DataFrame(data = self.k_eff_reco)
-        k_eff.to_csv(path + 'k_eff.csv')
+        k_eff.to_csv(result_path + 'k_eff.csv')
         del k_eff
         inc = pd.DataFrame(data = self.inc_reco)
-        inc.to_csv(path + 'inc.csv')
+        inc.to_csv(result_path + 'inc.csv')
         del inc
         inc_sp = pd.DataFrame(data = self.inc_sp_reco)
-        inc_sp.to_csv(path + 'inc_sp.csv')
+        inc_sp.to_csv(result_path + 'inc_sp.csv')
         del inc_sp
         hh_wb = pd.DataFrame(data = self.wb_reco)
-        hh_wb.to_csv(path + 'hh_wb.csv')
+        hh_wb.to_csv(result_path + 'hh_wb.csv')
         del hh_wb
         cons = pd.DataFrame(data = self.cons_reco)
-        cons.to_csv(path + 'cons.csv')
+        cons.to_csv(result_path + 'cons.csv')
         del cons
         cons_sav = pd.DataFrame(data = self.cons_reco_sm)
-        cons_sav.to_csv(path + 'cons_sav.csv')
+        cons_sav.to_csv(result_path + 'cons_sav.csv')
         del cons_sav
 
         return
+

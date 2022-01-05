@@ -90,8 +90,8 @@ class Agent():
             Total national capital stock.
         """
         self._dt = dt
-        print(self._c_shock)
-        print(aff_flag)
+        #print(self._c_shock)
+        #print(aff_flag)
         if aff_flag:
             self._c_shock += 1
         self._aff.append(aff_flag)

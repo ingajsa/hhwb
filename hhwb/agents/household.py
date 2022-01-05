@@ -144,7 +144,7 @@ class Household(Agent):
     def subsistence_line(self):
         return self.__subsistence_line
 
-    def update_reco(self, t_i=0., L_t=None, K=None):
+    def update_reco(self, L_t=None, K=None):
         """
         Parameters
         ----------
@@ -162,13 +162,11 @@ class Household(Agent):
         None.
     
         """
-        if t_i == 49:
-            print(t_i)
         self._update_k_eff()
         self._update_income_sp(L_t, K)
         self._update_income()
         self._update_consum()
-        self._update_wb()
+        self._update_wb_sav()
         self.__update_savings()
         # if self.__recovery_type == 1:
         #     self._update_wb_sav()
@@ -195,8 +193,7 @@ class Household(Agent):
         K : float, optional
             Total national capital stock. The default is 0.
         """
-        print('aff_flag')
-        print(aff_flag)
+        #print(self.__hhid)
         if aff_flag:
             
             if (self.__k_eff_0 - self._d_k_eff_t) > 0.0:
@@ -204,8 +201,6 @@ class Household(Agent):
                 self._d_k_eff_t += (self.__k_eff_0 - self._d_k_eff_t) * self._vul
                 opt_vul = self._d_k_eff_t / self.__k_eff_0
                 self._damage.append(self._d_k_eff_t)
-                print('damage')
-                print(self._damage)
                 self.__optimize_reco(vul=opt_vul)
                 
             else:
@@ -213,48 +208,44 @@ class Household(Agent):
                 self._damage.append(self._d_k_eff_t)
                 self.__lmbda.append(self.__lmbda[self._c_shock-1])
                 self._d_inc_sp_t = (L/K) * self.__inc_sp
-                self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/52.
+                self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/DT_STEP
                 self._d_con_t = self._d_inc_t # + self._check_subs()
                 self._update_wb()
                 return
             #if not self.__poverty_trap:
-        self._d_inc_sp_t = (L/K) * self.__inc_sp
-        if self.__hhid == 4.0:
-            print('nnnn')
-        self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/52.
-
-        self._set_recovery_path()
+            self._d_inc_sp_t = (L/K) * self.__inc_sp
+            self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/DT_STEP
+    
+            self._set_recovery_path()
         
-        if self.__recovery_type == 1:
-            self.__cnt_ts += 1
-            self._d_con_t = self._d_inc_t + self.__recovery_spending
-            self.__smooth_with_savings_1()
+            if self.__recovery_type == 1:
+                self.__cnt_ts += 1
+                self._d_con_t = self._d_inc_t + self.__recovery_spending
+                self.__smooth_with_savings_1()
+                
+                self.__con_smooth = self.__floor
+                
+            elif self.__recovery_type == 2:
+                self._d_con_t = self._d_inc_t + self._possible_reco()
+                self.__smooth_with_savings_2()
+                self.__con_smooth = self.__floor
             
-            self.__con_smooth = self.__floor
+            elif self.__recovery_type == 3:
+                self._d_con_t = self._d_inc_t
+                self.__smooth_with_savings_3()
+                self.__con_smooth = self.__floor
             
-        elif self.__recovery_type == 2:
-            self._d_con_t = self._d_inc_t
-            self.__smooth_with_savings_2(vul=opt_vul)
-            self.__con_smooth = self.__floor
-        
-        elif self.__recovery_type == 3:
-            self._d_con_t = self._d_inc_t
-            self.__smooth_with_savings_3(vul=opt_vul)
-            self.__con_smooth = self.__floor
-        
-        elif self.__recovery_type == 4:
-            self._d_con_t = self._d_inc_t
-            self.__smooth_with_savings_3(vul=opt_vul)
-            self.__con_smooth = self.__floor
+            elif self.__recovery_type == 4:
+                self._d_con_t = self._d_inc_t
+                self.__smooth_with_savings_3()
+                self.__con_smooth = self.__floor
+    
+            self._update_wb_sav()
 
-        if self.__recovery_type == 1:
-            self._d_con_t = self._d_inc_t + self.__recovery_spending
-        elif self.__recovery_type == 2:
-            self._d_con_t = self._d_inc_t + self._possible_reco()
         else:
-            self._d_con_t = self._d_inc_t
-
-        self._update_wb()
+            
+            self.update_reco(L_t=L, K=K)
+            
         # if self.__recovery_type == 1:
         #     self._update_wb_sav()
         #self.__determine_sav_opt()
@@ -308,9 +299,7 @@ class Household(Agent):
         # second best recovery --> 2
         # recovery generally below substistence --> 3
         # recovery starting below substistence --> 4
-        
-        if self.__hhid==0.0:
-            print('kkk')
+
         optimal_recovery_spending = self._get_reco_fee()
         if self._check_subs(optimal_recovery_spending) > 0:
             self.__recovery_type = 1
@@ -356,8 +345,6 @@ class Household(Agent):
 
     def _update_reco_spend(self):
 
-        if self.__hhid == 4.0:
-            print('sdl')
 
         if self.__recovery_type == 0:
             self.__recovery_spending = 0.
@@ -394,7 +381,7 @@ class Household(Agent):
                 self.__con_smooth = self.__floor
             else:
                 self.__recovery_spending = self._possible_reco() + SUBS_SAV_RATE
-                self.__smooth_with_savings_2(vul=opt_vul)
+                self.__smooth_with_savings_2()
             return
 
         if self.__recovery_type == 3:
@@ -435,21 +422,20 @@ class Household(Agent):
 
     def _update_income_sp(self, L_t, K):
 
-        self._d_inc_sp_t = ((L_t/K) * self.__inc_sp)/52.
+        self._d_inc_sp_t = ((L_t/K) * self.__inc_sp)/DT_STEP
         return
 
     def _update_income(self):
 
         #if not self.__poverty_trap:
-        self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/52.
+        self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/DT_STEP
         #else:
             #self._d_inc_t = self.__inc_0 - (self.__inc_sp - self._d_inc_sp_t)
         return
 
     def _update_consum(self):
         #if not self.__poverty_trap:
-        if (self.__hhid==4.0):
-            print('sdl')
+
         self._update_reco_spend()
         if self.__recovery_type < 2:
             self._d_con_t = self._d_inc_t + self.__recovery_spending
@@ -474,14 +460,9 @@ class Household(Agent):
 
     def _update_k_eff(self):
         #if not self.__poverty_trap:
-        if self.__hhid == 1.0:
-            print(self._d_inc_t)
-            print(self._d_k_eff_t)
 
         self._d_k_eff_t -= self.__recovery_spending
 
-        if self._d_k_eff_t < 0:
-            print('pause')
 
         return
 
@@ -501,15 +482,14 @@ class Household(Agent):
         d_con_t = self.__con_smooth/self.__n_inds
         self.__wb_0_sm += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
         self.__wb_t_sm += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
-        self.__wb_smooth = (self.__wb_0 - self.__wb_t)#/self.__wb_0
+        self.__wb_smooth = (self.__wb_0_sm - self.__wb_t_sm)#/self.__wb_0
 
         return
     
     def __update_savings(self):
-        if self.__hhid==0.0:
-            print('sdl')
-        if self._d_con_t < 0.05*self.__con_0/52.:
-            self.__sav_t += self.__sav_0/52.
+
+        if self._d_con_t < 0.05*self.__con_0/DT_STEP:
+            self.__sav_t += self.__sav_0/DT_STEP
         elif (self._t <= self.__tf) & (self.__sav_t> 0.0):
             self.__sav_t -= self._d_con_t - self.__floor
         return
@@ -588,19 +568,19 @@ class Household(Agent):
             self.__tf = 0.
             return
         
-        if self.__sav_t > dc0/(self.__lmbda[self._c_shock]/52.):
+        if self.__sav_t > dc0/(self.__lmbda[self._c_shock]/DT_STEP):
             self.__floor = 0.
             self.__tf = 40.
             return
         
         f = 0.01
-        last_result = (1/(self.__lmbda[self._c_shock]/52.)) * (dc0-f*(np.log(dc0) - np.log(f)+1)) - self.__sav_t
+        last_result = (1/(self.__lmbda[self._c_shock]/DT_STEP)) * (dc0-f*(np.log(dc0) - np.log(f)+1)) - self.__sav_t
         
         f += 0.1
 
         while f<dc0:
 
-            result = (1/(self.__lmbda[self._c_shock]/52.)) *(dc0-f*(np.log(dc0) -np.log(f)+1)) - self.__sav_t
+            result = (1/(self.__lmbda[self._c_shock]/DT_STEP)) *(dc0-f*(np.log(dc0) -np.log(f)+1)) - self.__sav_t
 
             if (last_result < 0 and result > 0) or\
                (last_result > 0 and result < 0):
@@ -610,21 +590,19 @@ class Household(Agent):
                 return
             else:
                 last_result = result
-                f += 0.1
-        if self.__hhid==0.0:
-            print("kslsk")
+                f += 1
+
         self.__floor = 0.
         self.__tf = 0.
 
         return
     
-    def __smooth_with_savings_2(self, vul=0.3):
+    def __smooth_with_savings_2(self):
         """Sets the floor taken from savings to smoothen HH's consumption
         loss and the time tf when it runs out of savings
         """
         
-        if self.__hhid==0.0:
-            print("kslsk")
+
 
         if self.__sav_t <= 0:
             self.__floor = self._d_con_t
@@ -633,9 +611,9 @@ class Household(Agent):
 
         dc0 = self._d_con_t
 
-        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*self.__recovery_spending*PI/52.))
+        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*self.__recovery_spending*PI/DT_STEP))
 
-        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*self.__recovery_spending*PI/52.))
+        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*self.__recovery_spending*PI/DT_STEP))
 
         if f_1 <=dc0:
             self.__floor = f_1
@@ -646,24 +624,29 @@ class Household(Agent):
         else:
             raise ValueError
 
-        self.__tf = ((dc0 - self.__floor)/(self.__recovery_spending*PI/52.)/52)
+        self.__tf = ((dc0 - self.__floor)/(self.__recovery_spending*PI/DT_STEP)/DT_STEP)
 
         if self.__floor < 0:
-            self.__tf = ((dc0 - 0.)/(self.__recovery_spending*PI/52.)/52)
+            self.__tf = ((dc0 - 0.)/(self.__recovery_spending*PI/DT_STEP)/DT_STEP)
             self.__floor = 0.
 
         return
     
-    def __smooth_with_savings_3(self, vul=0.3):
+    def __smooth_with_savings_3(self):
         """Sets the floor taken from savings to smoothen HH's consumption
         loss and the time tf when it runs out of savings
         """
+        
+        if self.__sav_t <= 0:
+            self.__floor = self._d_con_t
+            self.__tf = 0.0
+            return
 
         dc0 = self._d_con_t
         
-        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/DT_STEP))
         
-        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/DT_STEP))
         
         if f_1 <=dc0:
             self.__floor = f_1
@@ -674,10 +657,10 @@ class Household(Agent):
         else:
             raise ValueError
 
-        self.__tf = ((dc0 - self.__floor)/(SUBS_SAV_RATE*PI/52.)/52)
+        self.__tf = ((dc0 - self.__floor)/(SUBS_SAV_RATE*PI/DT_STEP)/DT_STEP)
 
         if self.__floor < 0:
-            self.__tf = ((dc0 - 0.)/(SUBS_SAV_RATE*PI/52.)/52)
+            self.__tf = ((dc0 - 0.)/(SUBS_SAV_RATE*PI/DT_STEP)/DT_STEP)
             self.__floor = 0.
 
         return
@@ -690,9 +673,9 @@ class Household(Agent):
         dc0 = self._d_con_t
 
 
-        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        f_1 = dc0 + np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/DT_STEP))
 
-        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/52.))
+        f_2 = dc0 - np.sqrt(dc0**2 - (dc0**2 - 2 * self.__sav_t*SUBS_SAV_RATE*PI/DT_STEP))
         if f_1 <=dc0:
             self.__floor = f_1
 
@@ -702,10 +685,10 @@ class Household(Agent):
         else:
             raise ValueError
 
-        self.__tf = ((dc0 - self.__floor)/(SUBS_SAV_RATE*PI/52.)/52.)
+        self.__tf = ((dc0 - self.__floor)/(SUBS_SAV_RATE*PI/DT_STEP)/DT_STEP)
 
         if self.__floor < 0:
-            self.__tf = ((dc0 - 0.)/(SUBS_SAV_RATE*PI/52.)/52)
+            self.__tf = ((dc0 - 0.)/(SUBS_SAV_RATE*PI/DT_STEP)/DT_STEP)
             self.__floor = 0.
 
         return
@@ -735,7 +718,7 @@ class Household(Agent):
 
         lmbda = 0.0
 
-        print('vul='+str(vul))
+        #print('vul='+str(vul))
 
         c=0
 
@@ -781,7 +764,7 @@ class Household(Agent):
                 assert(False)
 
             last_lambda = lmbda
-            lmbda += 0.001
+            lmbda += 0.01
             c+=1
 
     def plot_reco_trajec(self, timeframe=40, pred=5):

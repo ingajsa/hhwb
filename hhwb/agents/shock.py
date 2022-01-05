@@ -9,11 +9,11 @@ import os
 import random
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
 from hhwb.agents.agent import Agent
+from functools import partial
 from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD
 from datetime import datetime, date
-
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 
 AGENT_TYPE = 'SH'
@@ -72,6 +72,8 @@ REGION_DICT = {
 
 REGIONS = list(REGION_DICT)
 
+
+
 class Shock(Agent):
     """Shock definition. This class builds the intersection with Climada and provides direct
        damage obtained from Climada and the affected households.
@@ -111,6 +113,15 @@ class Shock(Agent):
     @property
     def dt(self):
         return self.__dt
+    
+    @staticmethod
+    def apply_shock(hh, L, K, dt_reco, affected_hhs):
+
+        if hh.hhid in affected_hhs:
+            hh.shock(aff_flag=True, L=L, K=K, dt=dt_reco)
+        else:
+            hh.shock(aff_flag=False, L=L, K=K, dt=dt_reco)
+        return hh
 
 
     def set_random_shock(self, n_events=3, n_hhs=10):
@@ -132,40 +143,41 @@ class Shock(Agent):
 
         return
     
-    def set_shock_from_csv(self, path_haz='/data/hazard_data/PHL_sat/haz_dat_30as_{}_vul.csv',
+    def set_shock_from_csv(self, work_path='/home/insauer/projects/WB_model/hhwb',
+                           path_haz='/data/hazard_data/PHL_sat/haz_dat_30as_{}_vul.csv',
                            path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL.csv',
                            hh_reg=None, k_eff=0):
 
         
 
-        df_hh = pd.read_csv(DATA_DIR + path_hh)
+        df_hh = pd.read_csv(work_path + path_hh)
         
         
         for r, reg in enumerate(REGIONS):
 
-            event_names, weeks = self.__set_time_stemps_disaster_set(path_haz, reg, '-')
+            event_names, weeks = self.__set_time_stemps_disaster_set(work_path, path_haz, reg, '-')
             
             if r==0:
                 self.__aff_ids = np.zeros((len(df_hh), len(event_names)))
                 self.__time_stemps = weeks
                 
 
-            self.__set_aff_hhs_disaster_set(path_haz, path_hh, reg, event_names)
+            self.__set_aff_hhs_disaster_set(work_path, path_haz, path_hh, reg, event_names)
         
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=event_names)
         
         shock_df['region']=df_hh['region']
         
-        shock_df.to_csv('/home/insauer/projects/WB_model/hhwb/data/output/shocks/shocks.csv')
+        shock_df.to_csv(work_path + '/data/output/shocks/shocks.csv')
 
 
         return
 
-    def __set_time_stemps_disaster_set(self, path_haz, reg, event_identifier):
+    def __set_time_stemps_disaster_set(self, work_path, path_haz, reg, event_identifier):
         
         start_date = date(2000,1,1)
         
-        shock_series = pd.read_csv((DATA_DIR + path_haz).format(reg))
+        shock_series = pd.read_csv((work_path + path_haz).format(reg))
             
         event_names = [col for col in shock_series.columns if '-' in col]
         
@@ -175,16 +187,36 @@ class Shock(Agent):
         
         return event_names, weeks
     
-    def read_shock(self, path, event_identifier):
+    def read_shock(self, work_path, path, event_identifier):
         
-        shock_data = pd.read_csv(path)
+        shock_data = pd.read_csv(work_path + path)
         
-        event_names = [col for col in shock_data.columns if '-' in col]
+        start_date = date(2002,1,1)
         
-        self.__aff_ids = np.array(shock_data[event_names])
+        event_names = [col for col in shock_data.columns if event_identifier in col]
         
+        event_data=shock_data[event_names]
         
+        dates_list = [datetime.strptime(event, '%Y-%m-%d').date() for event in event_names]
         
+        month = [np.round((event_date - start_date).days/28) for event_date in dates_list]
+        
+        self.__aff_ids=np.zeros((event_data.shape[0],len(list(set(month)))))
+        
+        week_nums=list(set(month))
+        
+        week_nums.sort()
+        for m, week in enumerate(week_nums):
+            
+            locat = np.where(np.array(month)==week)
+            
+            self.__aff_ids[:, m]=event_data.iloc[:, locat[0]].sum(axis=1).clip(upper=1)
+        
+        self.__time_stemps = month
+        
+        shock_df = pd.DataFrame(data=self.__aff_ids, columns=np.array(week_nums).astype(int).astype(str))
+        
+        shock_df.to_csv(work_path + '/data/output/shocks/shocks_aggregated_single.csv')
         
         
         return
@@ -241,12 +273,12 @@ class Shock(Agent):
     #         aff_ids[aff_hhs, ev_id]=1
     #     return
     
-    def __set_aff_hhs_disaster_set(self, path_haz, path_hh, reg, event_names):
+    def __set_aff_hhs_disaster_set(self, work_path, path_haz, path_hh, reg, event_names):
 
         print('region')
         print(reg)
-        df_haz = pd.read_csv((DATA_DIR + path_haz).format(reg))
-        df_hh = pd.read_csv(DATA_DIR + path_hh)
+        df_haz = pd.read_csv((work_path + path_haz).format(reg))
+        df_hh = pd.read_csv(work_path + path_hh)
         df_hh = df_hh[df_hh['region'] == reg]
         for ev_id, event in enumerate(event_names):
             print(event)
@@ -322,8 +354,9 @@ class Shock(Agent):
             self.__time_stemps.append(random.randint(200+add, 300+add))
             self.__event_names.append(str(self.__time_stemps[run]))
             add+=300
+     
 
-    def shock(self, event_index, gov, hhs, dt_reco):
+    def shock(self, event_index, gov, hhs, dt_reco, cores):
         """The function selects households randomly and shocks them. (Function is only a
            placeholder for a real Climade interface.
 
@@ -332,23 +365,31 @@ class Shock(Agent):
             gov : Government
                 the government of all households
         """
+        
         affected_hhs = np.where(self.__aff_ids[:, event_index]==1)[0]
         L_t = 0
+        p = mp.Pool(cores)
         for h_ind, hh in enumerate(hhs):
             if h_ind in affected_hhs:
                 L_t += hh.vul * (hh.k_eff_0 - hh.d_k_eff_t)
             else:
                 L_t += hh.d_k_eff_t
-        print('shock shocks')
-        for h_ind, hh in enumerate(hhs):
-            if h_ind in affected_hhs:
-                hh.shock(aff_flag=True, L=L_t, K=gov.K, dt=dt_reco)
-            else:
-                hh.shock(aff_flag=False, L=L_t, K=gov.K, dt=dt_reco)
+                
+        prod_x = partial(Shock.apply_shock, L=L_t, K=gov.K, dt_reco=dt_reco, affected_hhs=affected_hhs)
+        
+        hhs = p.map(prod_x, hhs)
+        p.close()
+        p.join()
+        # print('shock shocks')
+        # for h_ind, hh in enumerate(hhs):
+        #     if h_ind in affected_hhs:
+        #         hh.shock(aff_flag=True, L=L_t, K=gov.K, dt=dt_reco)
+        #     else:
+        #         hh.shock(aff_flag=False, L=L_t, K=gov.K, dt=dt_reco)
 
         gov.shock(aff_flag=True, L=L_t)
 
-        return
+        return hhs
 
     def __plot(self, ax):
         """The function selects households randomly and plots their recovery.

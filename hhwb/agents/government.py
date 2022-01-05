@@ -193,7 +193,7 @@ class Government(Agent):
         if aff_flag:
             self._d_k_eff_t = L
         else:
-            self._d_k_eff_t = self.__K * 0
+            self._d_k_eff_t = 0
 
         self._damage.append(self._d_k_eff_t)
         self._d_inc_sp_t = (L/self.__K) * self.__sp_cost

@@ -44,7 +44,7 @@ class HHRegister():
     def region_hhs(self):
         return self.__region_hhs
 
-    def set_from_csv(self, path='/data/test_data.csv', id_col='fhhid', n_ind='n_individuals',
+    def set_from_csv(self, work_path='/home/insauer/projects/WB_model/hhwb', path='/data/test_data.csv', id_col='fhhid', n_ind='n_individuals',
                      weight_col='weight', vul_col='vul', income_col='income',
                      income_sp='income_sp', region='region', decile='decile', savings='savings',
                      subsistence_line='subsistence_line', ispoor=None, isurban=None):
@@ -71,7 +71,7 @@ class HHRegister():
                            an urban or rural area
         """
 
-        data = pd.read_csv(DATA_DIR + path)
+        data = pd.read_csv(work_path + path)
         self.__n_hh = data.shape[0]
         self.__extract_meta_info(data, id_col)
 
