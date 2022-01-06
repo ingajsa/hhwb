@@ -18,6 +18,7 @@ from hhwb.agents.hh_register import HHRegister
 from hhwb.agents.government import Government
 from hhwb.agents.shock import Shock
 from hhwb.application.climate_life import ClimateLife
+import psutil
 
 parser = argparse.ArgumentParser(
     description='run hhwb for different shock series')
@@ -31,10 +32,12 @@ CLUSTER=True
 
 if CLUSTER==True:
     work_path='/p/projects/ebm/inga/hhwb'
-    cores=16
+    cores=psutil.cpu_count(logical = True)
 else:
     work_path='/home/insauer/projects/WB_model/hhwb'
     cores=7
+    
+print('Number threads = ' + str(cores))
 hh_reg = HHRegister()
 
 # create HH agents in the register

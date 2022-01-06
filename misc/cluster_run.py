@@ -44,7 +44,7 @@ parser.add_argument(
     '--mem_per_cpu', type=int, default=3584,
     help='number of memory per CPU (3584 is MaxMemPerCPU on cluster)')
 parser.add_argument(
-    '--largemem', action="store_true",
+    '--largemem', action="store_true", default=True,
     help='use ram_gpu partition')
 parser.add_argument(
     '--verbose', action="store_true",
