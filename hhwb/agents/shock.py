@@ -168,7 +168,7 @@ class Shock(Agent):
         
         shock_df['region']=df_hh['region']
         
-        shock_df.to_csv(work_path + '/data/output/shocks/shocks.csv')
+        #shock_df.to_csv(work_path + '/data/output/shocks/shocks.csv')
 
 
         return
@@ -216,7 +216,7 @@ class Shock(Agent):
         
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=np.array(week_nums).astype(int).astype(str))
         
-        shock_df.to_csv(work_path + '/data/output_{}/shocks_aggregated.csv'.format(run))
+        #shock_df.to_csv(work_path + '/data/output_{}/shocks_aggregated.csv'.format(run))
         
         
         return

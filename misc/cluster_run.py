@@ -41,7 +41,7 @@ parser.add_argument(
     '--threads', type=int, default=16,
     help='maximal number of threads on cluster (<= 16)')
 parser.add_argument(
-    '--mem_per_cpu', type=int, default=8000,#3584,
+    '--mem_per_cpu', type=int, default=3584,
     help='number of memory per CPU (3584 is MaxMemPerCPU on cluster)')
 parser.add_argument(
     '--largemem', action="store_true",
