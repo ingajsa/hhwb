@@ -122,7 +122,7 @@ def schedule_run(run_nb,flag, run_name):
 #SBATCH --%(node_usage)s
 #SBATCH --account=ebm        
 #SBATCH --nodes=1
-#SBATCH --ntasks=1RF_model
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=%(num_threads)1d
 #SBATCH --mem-per-cpu=%(mem_per_cpu)1d
 #SBATCH --workdir=%(initialdir)s
