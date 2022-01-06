@@ -38,10 +38,10 @@ parser.add_argument(
     '--hours', type=int, default=24,
     help='maximal hours to run on cluster (168=week, 720=month)')
 parser.add_argument(
-    '--threads', type=int, default=16,
+    '--threads', type=int, default=8,
     help='maximal number of threads on cluster (<= 16)')
 parser.add_argument(
-    '--mem_per_cpu', type=int, default=3584,
+    '--mem_per_cpu', type=int, default=8000,
     help='number of memory per CPU (3584 is MaxMemPerCPU on cluster)')
 parser.add_argument(
     '--largemem', action="store_true",
