@@ -53,7 +53,7 @@ gov.set_tax_rate(all_hhs)
 
 fld = Shock()
 #fld.set_shock_from_csv()
-fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-')
+fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-', run=args.run_name)
 
 # print('Shocks prepared')
 # # print(fld.aff_ids)

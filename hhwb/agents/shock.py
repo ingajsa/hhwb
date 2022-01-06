@@ -187,7 +187,7 @@ class Shock(Agent):
         
         return event_names, weeks
     
-    def read_shock(self, work_path, path, event_identifier):
+    def read_shock(self, work_path, path, event_identifier,run):
         
         shock_data = pd.read_csv(work_path + path)
         
@@ -216,7 +216,7 @@ class Shock(Agent):
         
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=np.array(week_nums).astype(int).astype(str))
         
-        shock_df.to_csv(work_path + '/data/output/shocks/shocks_aggregated_single.csv')
+        shock_df.to_csv(work_path + '/data/output_{}/shocks_aggregated.csv'.format(run))
         
         
         return
