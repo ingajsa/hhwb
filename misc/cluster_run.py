@@ -41,7 +41,7 @@ parser.add_argument(
     '--threads', type=int, default=16,
     help='maximal number of threads on cluster (<= 16)')
 parser.add_argument(
-    '--mem_per_cpu', type=int, default=3584,
+    '--mem_per_cpu', type=int, default=8000,#3584,
     help='number of memory per CPU (3584 is MaxMemPerCPU on cluster)')
 parser.add_argument(
     '--largemem', action="store_true",
@@ -107,7 +107,8 @@ def schedule_run(run_nb,flag, run_name):
             "options": "--run_name %s "%(run_name),
             "num_threads": args.threads,
             "mem_per_cpu": args.mem_per_cpu if not args.largemem else 15360,   # if mem_per_cpu is larger than MaxMemPerCPU then num_threads is reduced
-            "other": "#SBATCH --partition=ram_gpu" if args.largemem else ""
+            "other": "" if args.largemem else ""
+            #"other": "#SBATCH --partition=ram_gpu" if args.largemem else ""
         }
 
         cmd = """echo "#!/bin/sh
