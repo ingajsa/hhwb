@@ -96,6 +96,7 @@ class ClimateLife():
 
             if t_i % TEMP_RES == 0:
                 keff[int(hh.hhid)] = hh.d_k_eff_t
+                print(keff[int(hh.hhid)])
                 inc[int(hh.hhid)] = hh.d_inc_t
                 inc_sp[int(hh.hhid)] = hh.d_inc_sp_t
                 cons[int(hh.hhid)]  = hh.d_con_t
@@ -128,19 +129,23 @@ class ClimateLife():
         
         colnames = np.arange(len(self.__hhs)).astype(str)
         
-        keff = pd.DataFrame(columns=colnames)
-        inc =  pd.DataFrame(columns=colnames)
-        inc_sp =  pd.DataFrame(columns=colnames)
-        cons =  pd.DataFrame(columns=colnames)
-        cons_sm =  pd.DataFrame(columns=colnames)
-        wb =  pd.DataFrame(columns=colnames)
+        k_eff = pd.DataFrame(columns=colnames)
+        inc_ =  pd.DataFrame(columns=colnames)
+        inc_sp_ =  pd.DataFrame(columns=colnames)
+        cons_ =  pd.DataFrame(columns=colnames)
+        cons_sm_ =  pd.DataFrame(columns=colnames)
+        wb_ =  pd.DataFrame(columns=colnames)
+        wb_sm_ =  pd.DataFrame(columns=colnames)
+        gov_ =  pd.DataFrame(columns=['keff','inc', 'inc_sp', 'cons', 'cons_sm', 'wb', 'wb_sm'])
         
-        keff.to_csv(work_path+result_path+'keff.csv')
-        inc.to_csv(work_path+result_path+'inc.csv')
-        inc_sp.to_csv(work_path+result_path+'inc_sp.csv')
-        cons.to_csv(work_path+result_path+'cons.csv')
-        cons_sm.to_csv(work_path+result_path+'cons_sm.csv')
-        wb.to_csv(work_path+result_path+'wb.csv')
+        k_eff.to_csv(work_path+result_path+'keff.csv')
+        inc_.to_csv(work_path+result_path+'inc.csv')
+        inc_sp_.to_csv(work_path+result_path+'inc_sp.csv')
+        cons_.to_csv(work_path+result_path+'cons.csv')
+        cons_sm_.to_csv(work_path+result_path+'cons_sm.csv')
+        wb_.to_csv(work_path+result_path+'wb.csv')
+        wb_sm_.to_csv(work_path+result_path+'wb_sm.csv')
+        gov_.to_csv(work_path+result_path+'gov.csv')
         
         for hh in self.__hhs:
             print('Capital stock of HH ' + str(int(hh.hhid))+': '+str(hh.k_eff_0))
@@ -156,12 +161,14 @@ class ClimateLife():
         n_shock = 0
         
         
-        with open(work_path+result_path+'keff.csv', 'w') as f_keff,\
-             open(work_path+result_path+'inc.csv', 'w') as f_inc,\
-             open(work_path+result_path+'inc_sp.csv', 'w') as f_inc_sp,\
-             open(work_path+result_path+'cons.csv', 'w') as f_cons,\
-             open(work_path+result_path+'cons_sm.csv', 'w') as f_cons_sm,\
-             open(work_path+result_path+'wb.csv', 'w') as f_wb:
+        with open(work_path+result_path+'keff.csv', 'w', newline='') as f_keff,\
+             open(work_path+result_path+'inc.csv', 'w', newline='') as f_inc,\
+             open(work_path+result_path+'inc_sp.csv', 'w', newline='') as f_inc_sp,\
+             open(work_path+result_path+'cons.csv', 'w', newline='') as f_cons,\
+             open(work_path+result_path+'cons_sm.csv', 'w', newline='') as f_cons_sm,\
+             open(work_path+result_path+'wb.csv', 'w', newline='') as f_wb,\
+             open(work_path+result_path+'wb_sm.csv', 'w', newline='') as f_wb_sm,\
+             open(work_path+result_path+'gov.csv', 'w', newline='') as f_gov:
                  
             writer_keff=csv.writer(f_keff, delimiter=',')
             writer_inc=csv.writer(f_inc, delimiter=',')
@@ -169,6 +176,8 @@ class ClimateLife():
             writer_cons=csv.writer(f_cons, delimiter=',')
             writer_conssm=csv.writer(f_cons_sm, delimiter=',')
             writer_wb=csv.writer(f_wb, delimiter=',')
+            writer_wb_sm=csv.writer(f_wb_sm, delimiter=',')
+            writer_gov=csv.writer(f_gov, delimiter=',')
             
             for t_i in self.__dt_life:
     
@@ -188,15 +197,23 @@ class ClimateLife():
                     p.close()
                     p.join()
     
-                keff, inc, inc_sp, cons, cons_sm, wb = self.__update_records(t_i)
+                keff, inc, inc_sp, cons, cons_sm, wb, wb_sm = self.__update_records(t_i)
+                
+                gov_res = [self.__gov._d_k_eff_t, self.__gov._d_inc_t, self.__gov._d_inc_sp_t,
+                           self.__gov._d_con_t, self.__gov._cons_sm, self.__gov._wb,
+                           self.__gov.__wb_smooth]
+                
+                print(keff[np.where(keff>0)])
     
 
-                writer_keff.writerow(keff)
-                writer_inc.writerow(inc)
-                write_incsp.writerow(inc_sp)
-                writer_cons.writerow(cons)
-                writer_conssm.writerow(cons_sm)
-                writer_wb.writerow(wb)
+                writer_keff.writerow(list(keff))
+                writer_inc.writerow(list(inc))
+                write_incsp.writerow(list(inc_sp))
+                writer_cons.writerow(list(cons))
+                writer_conssm.writerow(list(cons_sm))
+                writer_wb.writerow(list(wb))
+                writer_wb_sm.writerow(list(wb_sm))
+                writer_gov.writerow(list(gov_res))
             
             f_keff.close()
             f_inc.close()
@@ -204,6 +221,7 @@ class ClimateLife():
             f_cons.close()
             f_cons_sm.close()
             f_wb.close()
+            f_wb_sm.close()
     
                 # self.__plot_info(n_plot_hhs=5, plot_hhs=plot_ids)
     

@@ -47,16 +47,6 @@ class Government(Agent):
 
         self.__L_t = 0.
 
-        self._k_eff_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._k_eff_reco[:] = np.nan
-        self._inc_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._inc_reco[:] = np.nan
-        self._inc_sp_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._inc_sp_reco[:] = np.nan
-        self._cons_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._cons_reco[:] = np.nan
-        self._wb_reco = np.empty(int(RECO_PERIOD*DT_STEP/TEMP_RES + 1))
-        self._wb_reco[:] = np.nan
 
 
     @property
@@ -74,26 +64,15 @@ class Government(Agent):
     @property
     def L_t(self):
         return self._d_k_eff_t
-
+    
     @property
-    def inc_reco(self):
-        return self._inc_reco
-
+    def con_smooth(self):
+        return self.__con_smooth
+    
     @property
-    def inc_sp_reco(self):
-        return self._inc_sp_reco
+    def wb_smooth(self):
+        return self.__wb_smooth
 
-    @property
-    def cons_reco(self):
-        return self._cons_reco
-
-    @property
-    def wb_reco(self):
-        return self._wb_reco
-
-    @property
-    def k_eff_reco(self):
-        return self._k_eff_reco
 
 
 
@@ -142,16 +121,7 @@ class Government(Agent):
         """
 
         self.__update_all(hh_reg)
-        if t_i % TEMP_RES == 0:
-            self._k_eff_reco[int(t_i/TEMP_RES)] = self._d_k_eff_t
-            self._inc_reco[int(t_i/TEMP_RES)] = self._d_inc_t
-            self._inc_sp_reco[int(t_i/TEMP_RES)] = self._d_inc_sp_t
-            self._cons_reco[int(t_i/TEMP_RES)] = self._d_con_t
-            self._wb_reco[int(t_i/TEMP_RES)] = self._d_wb_t
-            # self.__k_eff_reco_test[int(t_i/TEMP_RES)] = self.__d_k_eff_t_test
-            # self.__inc_reco_test[int(t_i/TEMP_RES)] = self.__d_inc_t_test
-            # self.__inc_sp_reco_test[int(t_i/TEMP_RES)] = self.__d_inc_sp_t_test
-            # self.__cons_reco_test[int(t_i/TEMP_RES)] = self.__d_con_t_test
+
         return
 
 
@@ -168,12 +138,16 @@ class Government(Agent):
         self._d_inc_t = 0.
         self._d_inc_sp_t = 0.
         self._d_wb_t = 0.
+        self.__con_smooth = 0.
+        self.__wb_smooth = 0.
         for hh in reg_hh:
             self._d_k_eff_t += hh.d_k_eff_t
             self._d_con_t += hh.d_con_t
             self._d_inc_t += hh.d_inc_t
             self._d_inc_sp_t += hh.d_inc_sp_t
             self._d_wb_t += hh.d_wb_t
+            self.__wb_smooth += hh.__wb_smooth
+            self.__con_smooth += hh.__con_smooth
         return
     
     def _set_shock_state(self, L, K, aff_flag):

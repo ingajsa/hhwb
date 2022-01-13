@@ -239,7 +239,6 @@ class Household(Agent):
                 self._d_con_t = self._d_inc_t
                 self.__smooth_with_savings_3()
                 self.__con_smooth = self.__floor
-    
             self._update_wb_sav()
 
         else:
@@ -442,8 +441,8 @@ class Household(Agent):
             if self.__recovery_type == 1:
                 if self._t <= self.__tf:
                     self.__con_smooth = self.__floor
-                else:
-                    self.__con_smooth = self._d_con_t
+            else:
+                self.__con_smooth = self._d_con_t
         elif self.__recovery_type == 2:
             self._d_con_t = self._d_inc_t + self._possible_reco()
             if self._t <= self.__tf:
@@ -488,7 +487,7 @@ class Household(Agent):
     
     def __update_savings(self):
 
-        if self._d_con_t < 0.05*self.__con_0/DT_STEP:
+        if (self._d_con_t < 0.05*self.__con_0/DT_STEP) & (self.__sav_t<self.__sav_0):
             self.__sav_t += self.__sav_0/DT_STEP
         elif (self._t <= self.__tf) & (self.__sav_t> 0.0):
             self.__sav_t -= self._d_con_t - self.__floor

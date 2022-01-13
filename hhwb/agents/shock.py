@@ -118,6 +118,7 @@ class Shock(Agent):
     def apply_shock(hh, L, K, dt_reco, affected_hhs):
 
         if hh.hhid in affected_hhs:
+            
             hh.shock(aff_flag=True, L=L, K=K, dt=dt_reco)
         else:
             hh.shock(aff_flag=False, L=L, K=K, dt=dt_reco)
@@ -212,7 +213,7 @@ class Shock(Agent):
             
             self.__aff_ids[:, m]=event_data.iloc[:, locat[0]].sum(axis=1).clip(upper=1)
         
-        self.__time_stemps = month
+        self.__time_stemps = week_nums
         
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=np.array(week_nums).astype(int).astype(str))
         
@@ -370,7 +371,7 @@ class Shock(Agent):
         L_t = 0
         p = mp.Pool(cores)
         for h_ind, hh in enumerate(hhs):
-            if h_ind in affected_hhs:
+            if hh.hhid in affected_hhs:
                 L_t += hh.vul * (hh.k_eff_0 - hh.d_k_eff_t)
             else:
                 L_t += hh.d_k_eff_t
