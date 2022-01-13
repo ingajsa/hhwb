@@ -91,6 +91,7 @@ class ClimateLife():
         cons = np.zeros((len(self.__hhs)))
         cons_sm = np.zeros((len(self.__hhs)))
         wb = np.zeros((len(self.__hhs)))
+        wb_sm = np.zeros((len(self.__hhs)))
         
         for hh in self.__hhs:
 
@@ -100,11 +101,12 @@ class ClimateLife():
                 inc[int(hh.hhid)] = hh.d_inc_t
                 inc_sp[int(hh.hhid)] = hh.d_inc_sp_t
                 cons[int(hh.hhid)]  = hh.d_con_t
-                wb[int(hh.hhid)] = hh.wb_smooth
+                wb[int(hh.hhid)] = hh.d_wb_t
+                wb_sm[int(hh.hhid)] = hh.wb_smooth
                 cons_sm[int(hh.hhid)] = hh.con_smooth
             hh._t += hh._dt
 
-        return keff, inc, inc_sp, cons, cons_sm, wb
+        return keff, inc, inc_sp, cons, cons_sm, wb, wb_sm
     
     
 
