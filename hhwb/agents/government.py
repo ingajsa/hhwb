@@ -146,8 +146,8 @@ class Government(Agent):
             self._d_inc_t += hh.d_inc_t
             self._d_inc_sp_t += hh.d_inc_sp_t
             self._d_wb_t += hh.d_wb_t
-            self.__wb_smooth += hh.__wb_smooth
-            self.__con_smooth += hh.__con_smooth
+            self.__wb_smooth += hh.wb_smooth
+            self.__con_smooth += hh.con_smooth
         return
     
     def _set_shock_state(self, L, K, aff_flag):
