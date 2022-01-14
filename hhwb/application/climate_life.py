@@ -97,7 +97,6 @@ class ClimateLife():
 
             if t_i % TEMP_RES == 0:
                 keff[int(hh.hhid)] = hh.d_k_eff_t
-                print(keff[int(hh.hhid)])
                 inc[int(hh.hhid)] = hh.d_inc_t
                 inc_sp[int(hh.hhid)] = hh.d_inc_sp_t
                 cons[int(hh.hhid)]  = hh.d_con_t
