@@ -214,7 +214,7 @@ class ClimateLife():
                 writer_conssm.writerow(list(cons_sm))
                 writer_wb.writerow(list(wb))
                 writer_wb_sm.writerow(list(wb_sm))
-                writer_gov.writerow(list(gov_res))
+                writer_gov.writerow(gov_res)
             
             f_keff.close()
             f_inc.close()
@@ -223,6 +223,7 @@ class ClimateLife():
             f_cons_sm.close()
             f_wb.close()
             f_wb_sm.close()
+            f_gov.close()
     
                 # self.__plot_info(n_plot_hhs=5, plot_hhs=plot_ids)
     
