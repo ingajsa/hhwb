@@ -208,11 +208,7 @@ class Household(Agent):
                 #self.__poverty_trap = True
                 self._damage.append(self._d_k_eff_t)
                 self.__lmbda.append(self.__lmbda[self._c_shock-1])
-                self._d_inc_sp_t = (L/K) * self.__inc_sp
-                self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/DT_STEP
-                self._d_con_t = self._d_inc_t # + self._check_subs()
-                self._update_wb()
-                self._update_wb_sav()
+                self.update_reco(L_t=L, K=K)
                 return
             #if not self.__poverty_trap:
             self._d_inc_sp_t = (L/K) * self.__inc_sp
@@ -442,6 +438,8 @@ class Household(Agent):
             if self.__recovery_type == 1:
                 if self._t <= self.__tf:
                     self.__con_smooth = self.__floor
+                else:
+                    self.__con_smooth = self._d_con_t
             else:
                 self.__con_smooth = self._d_con_t
         elif self.__recovery_type == 2:
@@ -492,6 +490,9 @@ class Household(Agent):
             self.__sav_t += self.__sav_0/DT_STEP
         elif (self._t <= self.__tf) & (self.__sav_t> 0.0):
             self.__sav_t -= self._d_con_t - self.__floor
+        
+        if self.__sav_t< 0.0:
+            self.__sav_t=0.0
         return
     
     #def __determine_sav_opt(self):
