@@ -202,10 +202,9 @@ class ClimateLife():
                 keff, inc, inc_sp, cons, cons_sm, wb, wb_sm = self.__update_records(t_i)
                 
                 gov_res = [self.__gov.d_k_eff_t, self.__gov.d_inc_t, self.__gov.d_inc_sp_t,
-                           self.__gov.d_con_t, self.__gov.cons_sm, self.__gov.wb,
+                           self.__gov.d_con_t, self.__gov.con_smooth, self.__gov.wb,
                            self.__gov.wb_smooth]
-                
-                print(keff[np.where(keff>0)])
+
     
 
                 writer_keff.writerow(list(keff))
