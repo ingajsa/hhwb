@@ -204,6 +204,8 @@ class ClimateLife():
                 gov_res = [self.__gov.d_k_eff_t, self.__gov.d_inc_t, self.__gov.d_inc_sp_t,
                            self.__gov.d_con_t, self.__gov.con_smooth, self.__gov.d_wb_t,
                            self.__gov.wb_smooth]
+                
+                print(gov_res)
 
     
 

@@ -166,6 +166,7 @@ class Household(Agent):
         self._update_income_sp(L_t, K)
         self._update_income()
         self._update_consum()
+        self._update_wb()
         self._update_wb_sav()
         self.__update_savings()
         # if self.__recovery_type == 1:
@@ -211,6 +212,7 @@ class Household(Agent):
                 self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/DT_STEP
                 self._d_con_t = self._d_inc_t # + self._check_subs()
                 self._update_wb()
+                self._update_wb_sav()
                 return
             #if not self.__poverty_trap:
             self._d_inc_sp_t = (L/K) * self.__inc_sp
@@ -239,6 +241,7 @@ class Household(Agent):
                 self._d_con_t = self._d_inc_t
                 self.__smooth_with_savings_3()
                 self.__con_smooth = self.__floor
+            self._update_wb()
             self._update_wb_sav()
 
         else:
@@ -396,8 +399,6 @@ class Household(Agent):
 
         if self.__recovery_type == 4:
             if self._possible_reco() > 0:
-                if self.__hhid == 0.0:
-                    print('sdl')
                 self._t = 0.
                 self.__recovery_type = 2
                 self.__recovery_spending = self._possible_reco() + SUBS_SAV_RATE
