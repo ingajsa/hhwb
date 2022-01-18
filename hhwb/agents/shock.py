@@ -169,7 +169,7 @@ class Shock(Agent):
         
         shock_df['region']=df_hh['region']
         
-        #shock_df.to_csv(work_path + '/data/output/shocks/shocks.csv')
+        shock_df.to_csv(work_path + '/data/output/shocks/shocks_99.csv')
 
 
         return
@@ -218,7 +218,7 @@ class Shock(Agent):
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=np.array(week_nums).astype(int).astype(str))
         
         #shock_df.to_csv(work_path + '/data/output_{}/shocks_aggregated.csv'.format(run))
-        
+        #shock_df.to_csv(work_path + '/data/output/shocks/shocks_99.csv')
         
         return
     
@@ -290,8 +290,7 @@ class Shock(Agent):
             for cell in affected_cells:
                 hhids = list(df_hh.loc[df_hh['centroid_id'] == cell, 'fhhid'])
                 
-                n_people = (df_hh.loc[df_hh['centroid_id'] == cell, 'weight'] *\
-                            df_hh.loc[df_hh['centroid_id'] == cell, 'n_individuals']).sum()
+                n_people = df_hh.loc[df_hh['centroid_id'] == cell, 'weight'].sum()
                 if n_people == 0.0:
                     continue
                 frac = df_haz.loc[(df_haz['Centroid_ID'] == cell), event].values[0]

@@ -41,7 +41,7 @@ print('Number threads = ' + str(cores))
 hh_reg = HHRegister()
 
 # create HH agents in the register
-hh_reg.set_from_csv(work_path=work_path, path='/data/survey_data/PHL/region_hh_full_pack_PHL.csv', id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
+hh_reg.set_from_csv(work_path=work_path, path='/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv', id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
                       vul_col='vul', income_col='income', income_sp='income_sp', region='region',
                       decile='decile', savings='savings', subsistence_line='subsistence_line',
                       ispoor='ispoor', isurban='isurban')
@@ -61,4 +61,4 @@ fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv
 # print('Shocks prepared')
 # # print(fld.aff_ids)
 cl = ClimateLife(all_hhs, fld, gov)
-cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/sav_rate_1853/' , cores=cores)
+cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/sav_rate_1853_99/' , cores=cores)
