@@ -58,8 +58,8 @@ sys.dont_write_bytecode = True
 # shock_files
 
 run_names=[
-    'shocks',
-    'shocks_single'
+    'shocks_3339',
+    'shocks_single_3339'
     ]
 
 

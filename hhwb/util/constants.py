@@ -35,7 +35,7 @@ RECO_PERIOD = 18
 """Time frame after first disaster in years where reconstruction is modeled (in years)"""
 DT = RECO_PERIOD / (RECO_PERIOD * DT_STEP)
 """Time differnece in years between two time stemps"""
-SUBS_SAV_RATE = 1043/13. #4941/52.
+SUBS_SAV_RATE = 3339/13. # 1853 PHL2  #4941/52. MWI
 """Minimum recoery and savings rate"""
 OPT_DYN = False
 """Savings and recovery optimization in each timestemp"""
