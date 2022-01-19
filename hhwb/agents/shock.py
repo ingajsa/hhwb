@@ -218,7 +218,7 @@ class Shock(Agent):
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=np.array(week_nums).astype(int).astype(str))
         
         #shock_df.to_csv(work_path + '/data/output_{}/shocks_aggregated.csv'.format(run))
-        #shock_df.to_csv(work_path + '/data/output/shocks/shocks_99.csv')
+        #shock_df.to_csv(work_path + '/data/output/shocks/shocks_99_aggregated.csv')
         
         return
     

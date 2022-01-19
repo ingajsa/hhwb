@@ -8,7 +8,7 @@ Created on Fri Mar 13 21:48:03 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from hhwb.agents.agent import Agent
-from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, RECO_PERIOD, DT, SUBS_SAV_RATE, OPT_DYN
+from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, DT, SUBS_SAV_RATE, OPT_DYN
 
 
 AGENT_TYPE = 'HH'

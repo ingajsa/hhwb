@@ -40,19 +40,7 @@ class ClimateLife():
         # self.__abs_inc = plt.subplot(self.__info_summary[-1, 0])
         # self.__abs_inc_sp = plt.subplot(self.__info_summary[-1, -2])
         # save with RECO_PERIOD*DT_STEP/TEMP_RES + 1
-        # self.k_eff_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
-        # self.k_eff_reco[:] = np.nan
-        # self.inc_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
-        # self.inc_reco[:] = np.nan
-        # self.inc_sp_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
-        # self.inc_sp_reco[:] = np.nan
-        # self.cons_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
-        # self.cons_reco[:] = np.nan
-        # self.wb_reco = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
-        # self.wb_reco[:] = np.nan
-        
-        # self.cons_reco_sm = np.empty((int((RECO_PERIOD*DT_STEP)/TEMP_RES +1), len(self.__hhs)))
-        # self.cons_reco_sm[:] = np.nan
+
         
         
     @property
@@ -110,18 +98,18 @@ class ClimateLife():
     
 
     def start(self, work_path='/home/insauer/projects/WB_model/hhwb',
-              result_path='/data/output/', cores=1):
+              result_path='/data/output/', cores=1, reco_period=0):
         
         print('Life started')
         
         
         
-        pt = np.linspace(0, RECO_PERIOD, RECO_PERIOD*DT_STEP+1)
+        pt = np.linspace(0, reco_period, reco_period*DT_STEP+1)
         dt_reco = np.diff(pt)[0]
         
         self.__pt = pt[::4]
         
-        self.__dt_life = np.arange(0, RECO_PERIOD*DT_STEP+1)
+        self.__dt_life = np.arange(0, reco_period*DT_STEP+1)
         
 
         print('Tax rate: ' + str(self.__gov))

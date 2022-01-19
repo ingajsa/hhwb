@@ -62,8 +62,13 @@ run_names=[
     'shocks_single'
     ]
 
+run_times=[
+    160,
+    146
+    ]
 
-def schedule_run(run_nb,flag, run_name):
+
+def schedule_run(run_nb,flag, run_name, run_time):
     if not flag:
         run_label = "run_%s" % run_name
         if os.path.exists(run_label):
@@ -104,7 +109,7 @@ def schedule_run(run_nb,flag, run_name):
             "comment": "%s/%s" % (os.getcwd(), run_label),
             "environment": "ALL",
             "executable": 'cluster_sim.py',
-            "options": "--run_name %s "%(run_name),
+            "options": "--run_name %s --run_time %i "%(run_name, run_time),
             "num_threads": args.threads,
             "mem_per_cpu": args.mem_per_cpu if not args.largemem else 15360,   # if mem_per_cpu is larger than MaxMemPerCPU then num_threads is reduced
             "other": "" if args.largemem else ""
@@ -157,8 +162,8 @@ if num > 1:
 
 enum = 1
 
-for run_name in run_names:
-    schedule_run(run_nb=enum,flag=single, run_name=run_name)
+for r, run_name in enumerate(run_names):
+    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[r])
     enum += 1
 if num > 1:
     print("Scheduled %s runs" % num)

@@ -31,8 +31,9 @@ DT_STEP = 13
 TEMP_RES = 1
 """Temporal resolution after recovery in weeks
    (value currently copied from the original model)"""
-RECO_PERIOD = 18
+RECO_PERIOD = 146
 """Time frame after first disaster in years where reconstruction is modeled (in years)"""
+
 DT = RECO_PERIOD / (RECO_PERIOD * DT_STEP)
 """Time differnece in years between two time stemps"""
 SUBS_SAV_RATE = 3339/13. # 1853 PHL2  #4941/52. MWI

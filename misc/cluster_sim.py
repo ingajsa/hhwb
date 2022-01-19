@@ -26,6 +26,10 @@ parser.add_argument(
     '--run_name', type=str, default='shocks',
     help='runoff model')
 
+parser.add_argument(
+    '--run_time', type=int, default=160,
+    help='runoff model')
+
 args = parser.parse_args()
 
 CLUSTER=True
@@ -56,9 +60,10 @@ gov.set_tax_rate(all_hhs)
 
 fld = Shock()
 #fld.set_shock_from_csv()
-fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-', run=args.run_name)
+fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-',run=args.run_name)
 
 # print('Shocks prepared')
 # # print(fld.aff_ids)
 cl = ClimateLife(all_hhs, fld, gov)
-cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/sav_rate_3339_99/' , cores=cores)
+cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/full_recovery/',
+         cores=cores, run_time=args.run_time)

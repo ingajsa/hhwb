@@ -70,17 +70,12 @@ class Agent():
     def set_vul(self, vul):
         self._vul = vul
 
-    def shock(self, reco_period=RECO_PERIOD, temp_res=TEMP_RES, aff_flag=False,
+    def shock(self, aff_flag=False,
               L=None, K=None, dt=None):
         """This function causes the household to be shocked. The recovery track is set up and the
            post disaster state is generated for all indicators.
         Parameters
         ----------
-        reco_period : int, optional
-            Time frame after first disaster in years where reconstruction is modeled (in years).
-            The default is RECO_PERIOD.
-        temp_res : TYPE, optional
-            Temporal resolution after recovery in weeks. The default is TEMP_RES.
         aff_flag : bool, optional
             Bool indicating whether the household is affected by the current shock.
             The default is False.
