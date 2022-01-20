@@ -45,7 +45,7 @@ print('Number threads = ' + str(cores))
 hh_reg = HHRegister()
 
 # create HH agents in the register
-hh_reg.set_from_csv(work_path=work_path, path='/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv', id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
+hh_reg.set_from_csv(work_path=work_path, path='/data/survey_data/PHL/region_hh_full_pack_PHL_pop_syn.csv', id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
                       vul_col='vul', income_col='income', income_sp='income_sp', region='region',
                       decile='decile', savings='savings', subsistence_line='subsistence_line',
                       ispoor='ispoor', isurban='isurban')

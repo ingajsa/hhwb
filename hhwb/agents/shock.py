@@ -165,6 +165,7 @@ class Shock(Agent):
 
             self.__set_aff_hhs_disaster_set(work_path, path_haz, path_hh, reg, event_names)
         
+        
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=event_names)
         
         shock_df['region']=df_hh['region']
@@ -173,6 +174,103 @@ class Shock(Agent):
 
 
         return
+    
+    def generate_single_shocks(self, work_path='/home/insauer/projects/WB_model/hhwb',
+                           path_haz='/data/output/shocks/shocks_99_aggregated.csv',
+                           path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop.csv',
+                           path_hh_orig='/data/surveys_prepared/PHL/survey_PHL.csv',
+                           hh_reg=None, k_eff=0):
+
+
+        df_hh = pd.read_csv(work_path + path_hh)
+        df_hh_orig = pd.read_csv(work_path + path_hh_orig)
+        df_shock = pd.read_csv(work_path + path_haz)
+        
+        self.__time_stemps = df_shock.columns[1:].astype(int)
+        
+        event_names = df_shock.columns[1:]
+        
+        df_shock['region']=df_hh['region']
+        
+        df_shock['fhhid']=df_shock.index
+        
+        new_survey_data=pd.DataFrame()
+        
+        for r, reg in enumerate(REGIONS):
+            
+            print(reg)
+            
+            df_hh_reg = df_hh.loc[df_hh['region']==reg]
+            df_hh_orig_reg = df_hh_orig.loc[df_hh_orig['region']==reg]
+            df_shock_reg = df_shock.loc[df_shock['region']==reg]
+            
+            aff_hh_data = self.__shock_hh_without_location(df_hh_reg, df_hh_orig_reg, df_shock_reg, reg)
+            
+            new_survey_data=new_survey_data.append(aff_hh_data, ignore_index=True)
+        
+        self.__aff_ids = np.zeros((len(new_survey_data), len(event_names)))
+        
+        for i, sh in enumerate(self.__time_stemps):
+            
+            self.__aff_ids[:,i]=(new_survey_data.loc[:, 'event']==sh).astype(int)
+        
+        shocks = pd.DataFrame(data=self.__aff_ids, columns=event_names)
+        
+        shocks['region']=new_survey_data['region']
+        
+        new_survey_data.to_csv(work_path + '/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop_syn.csv')
+        
+        shocks.to_csv('/home/insauer/projects/WB_model/hhwb/data/shocks/shocks_synthetic.csv')
+        
+        return
+
+
+    def __shock_hh_without_location(self, df_hh_reg, df_hh_orig_reg, df_shock_reg, reg):
+        
+        c_aff_hhs = 0
+        
+        hhids=list(df_hh_orig_reg['hhid'])
+        
+        df_hh_orig_reg['n_copied']=0
+        df_hh_orig_reg['event']=0
+        df_hh_orig_reg['hh_instance']=0
+        
+        aff_hh_data = pd.DataFrame()
+        
+        for shock in self.__time_stemps:
+            print(shock)
+            aff_ids_shock = list(df_shock_reg.loc[df_shock_reg[str(shock)]==1,'fhhid'])
+            n_aff_shock = df_hh_reg.loc[df_hh_reg['fhhid'].isin(aff_ids_shock), 'n_individuals'].sum()
+            
+            c_hh = 0
+            print(n_aff_shock)
+            
+            while c_hh < n_aff_shock:
+                
+                hh_ind = random.choice(hhids)
+                
+                if df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'weight'].sum() <= \
+                    df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum():
+                    hhids.remove(hh_ind)
+                    print('stop')
+                    print(len(hhids))
+                    continue
+                
+                aff_hh_data = aff_hh_data.append(df_hh_orig_reg.loc[df_hh_orig_reg['hhid']==hh_ind], ignore_index=True)
+                aff_hh_data.loc[c_aff_hhs,'weight'] =  df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum()
+                aff_hh_data.loc[c_aff_hhs,'hh_instance'] = df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_copied'].sum()+1
+                aff_hh_data.loc[c_aff_hhs, 'event'] = shock
+                df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind, 'n_copied'] += 1
+                df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind, 'weight'] -= df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum()
+                
+                c_hh +=df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum()
+
+                c_aff_hhs += 1
+                
+            aff_hh_data['region']=reg
+        aff_hh_data = df_hh_orig_reg.append(aff_hh_data, ignore_index=True)
+        
+        return aff_hh_data
 
     def __set_time_stemps_disaster_set(self, work_path, path_haz, reg, event_identifier):
         
