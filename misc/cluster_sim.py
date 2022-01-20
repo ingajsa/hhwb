@@ -66,4 +66,4 @@ fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv
 # # print(fld.aff_ids)
 cl = ClimateLife(all_hhs, fld, gov)
 cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/full_recovery/',
-         cores=cores, run_time=args.run_time)
+         cores=cores, reco_period=args.run_time)
