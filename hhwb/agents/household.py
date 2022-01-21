@@ -383,11 +383,12 @@ class Household(Agent):
             return
 
         if self.__recovery_type == 3:
-            if self._d_k_eff_t == 0:
+
+            if self._d_k_eff_t <= 0:
+                self.__recovery_spending = 0
                 self.__recovery_type = 0
-                self.__recovery_spending = 0.
                 return
-            if self._d_k_eff_t < SUBS_SAV_RATE:
+            elif self._d_k_eff_t < SUBS_SAV_RATE:
                 self.__recovery_spending = self._d_k_eff_t
             else:
                 self.__recovery_spending = SUBS_SAV_RATE
@@ -400,12 +401,15 @@ class Household(Agent):
                 self.__recovery_spending = self._possible_reco() + SUBS_SAV_RATE
                 self.__smooth_with_savings_2()
             else:
-                if self._d_k_eff_t == 0:
+                
+                if self._d_k_eff_t <= 0:
+                    self.__recovery_spending = 0
                     self.__recovery_type = 0
-                    self.__recovery_spending = 0.
-                    return
+
                 if self._d_k_eff_t < SUBS_SAV_RATE:
                     self.__recovery_spending = self._d_k_eff_t
+                
+                    
                 else:
                     self.__recovery_spending = SUBS_SAV_RATE
         return
@@ -419,12 +423,17 @@ class Household(Agent):
     def _update_income_sp(self, L_t, K):
 
         self._d_inc_sp_t = ((L_t/K) * self.__inc_sp)/DT_STEP
+        
+        if self._d_inc_sp_t <0:
+            self._d_inc_sp_t=0
         return
 
     def _update_income(self):
 
         #if not self.__poverty_trap:
         self._d_inc_t = ((1-self.__tax_rate) * PI * self._d_k_eff_t + self._d_inc_sp_t)/DT_STEP
+        if self._d_inc_t <0:
+            self._d_inc_t=0
         #else:
             #self._d_inc_t = self.__inc_0 - (self.__inc_sp - self._d_inc_sp_t)
         return
@@ -454,14 +463,26 @@ class Household(Agent):
                 self.__con_smooth = self.__con_smooth
             else:
                 self.__con_smooth = self._d_con_t
+    
+        if self._d_con_t <0:
+            self._d_con_t=0
+            self.__recovery_spending = 0.
+        
+        if self.__con_smooth <0:
+            self.__con_smooth=0
+            self.__recovery_spending = 0.
+        
         return
 
     def _update_k_eff(self):
         #if not self.__poverty_trap:
 
         self._d_k_eff_t -= self.__recovery_spending
-
-
+        
+        if self._d_k_eff_t <0:
+            self._d_k_eff_t=0
+            self.__recovery_spending = 0.
+            self.__recovery_spending = 0.
         return
 
     def _update_wb(self):

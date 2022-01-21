@@ -176,7 +176,7 @@ class Shock(Agent):
         return
     
     def generate_single_shocks(self, work_path='/home/insauer/projects/WB_model/hhwb',
-                           path_haz='/data/output/shocks/shocks_99_aggregated.csv',
+                           path_haz='/data/output/shocks/shocks_99.csv',
                            path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop.csv',
                            path_hh_orig='/data/surveys_prepared/PHL/survey_PHL.csv',
                            hh_reg=None, k_eff=0):
@@ -186,7 +186,7 @@ class Shock(Agent):
         df_hh_orig = pd.read_csv(work_path + path_hh_orig)
         df_shock = pd.read_csv(work_path + path_haz)
         
-        self.__time_stemps = df_shock.columns[1:].astype(int)
+        self.__time_stemps = df_shock.columns[1:-1]#.astype(int)
         
         event_names = df_shock.columns[1:]
         
@@ -197,7 +197,7 @@ class Shock(Agent):
         new_survey_data=pd.DataFrame()
         
         for r, reg in enumerate(REGIONS):
-            
+            start_date = date(2002,1,1)
             print(reg)
             
             df_hh_reg = df_hh.loc[df_hh['region']==reg]
@@ -212,7 +212,7 @@ class Shock(Agent):
         
         for i, sh in enumerate(self.__time_stemps):
             
-            self.__aff_ids[:,i]=(new_survey_data.loc[:, 'event']==sh).astype(int)
+            self.__aff_ids[:,i]=(new_survey_data.loc[:, 'event']==i).astype(int)
         
         shocks = pd.DataFrame(data=self.__aff_ids, columns=event_names)
         
@@ -237,9 +237,9 @@ class Shock(Agent):
         
         aff_hh_data = pd.DataFrame()
         
-        for shock in self.__time_stemps:
+        for i,shock in enumerate(self.__time_stemps):
             print(shock)
-            aff_ids_shock = list(df_shock_reg.loc[df_shock_reg[str(shock)]==1,'fhhid'])
+            aff_ids_shock = list(df_shock_reg.loc[df_shock_reg[shock]==1,'fhhid'])
             n_aff_shock = df_hh_reg.loc[df_hh_reg['fhhid'].isin(aff_ids_shock), 'n_individuals'].sum()
             
             c_hh = 0
@@ -259,7 +259,7 @@ class Shock(Agent):
                 aff_hh_data = aff_hh_data.append(df_hh_orig_reg.loc[df_hh_orig_reg['hhid']==hh_ind], ignore_index=True)
                 aff_hh_data.loc[c_aff_hhs,'weight'] =  df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum()
                 aff_hh_data.loc[c_aff_hhs,'hh_instance'] = df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_copied'].sum()+1
-                aff_hh_data.loc[c_aff_hhs, 'event'] = shock
+                aff_hh_data.loc[c_aff_hhs, 'event'] = i
                 df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind, 'n_copied'] += 1
                 df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind, 'weight'] -= df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum()
                 
