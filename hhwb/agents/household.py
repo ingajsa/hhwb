@@ -284,7 +284,7 @@ class Household(Agent):
             recovery fee.
         """
         # hh not effected --> 0
-        if self._d_k_eff_t == 0:
+        if self._d_k_eff_t <= 0:
             self.__recovery_type = 0
             self.__recovery_spending = 0.
             return
@@ -405,6 +405,7 @@ class Household(Agent):
                 if self._d_k_eff_t <= 0:
                     self.__recovery_spending = 0
                     self.__recovery_type = 0
+                    return
 
                 if self._d_k_eff_t < SUBS_SAV_RATE:
                     self.__recovery_spending = self._d_k_eff_t
@@ -467,10 +468,10 @@ class Household(Agent):
         if self._d_con_t <0:
             self._d_con_t=0
             self.__recovery_spending = 0.
+            self.__recovery_type = 0
         
         if self.__con_smooth <0:
             self.__con_smooth=0
-            self.__recovery_spending = 0.
         
         return
 
@@ -479,10 +480,10 @@ class Household(Agent):
 
         self._d_k_eff_t -= self.__recovery_spending
         
-        if self._d_k_eff_t <0:
+        if self._d_k_eff_t <=0:
             self._d_k_eff_t=0
             self.__recovery_spending = 0.
-            self.__recovery_spending = 0.
+            self.__recovery_type = 0
         return
 
     def _update_wb(self):
