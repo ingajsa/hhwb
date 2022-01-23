@@ -141,13 +141,13 @@ class Government(Agent):
         self.__con_smooth = 0.
         self.__wb_smooth = 0.
         for hh in reg_hh:
-            self._d_k_eff_t += hh.d_k_eff_t
-            self._d_con_t += hh.d_con_t
-            self._d_inc_t += hh.d_inc_t
-            self._d_inc_sp_t += hh.d_inc_sp_t
-            self._d_wb_t += hh.d_wb_t
-            self.__wb_smooth += hh.wb_smooth
-            self.__con_smooth += hh.con_smooth
+            self._d_k_eff_t += hh.weight* hh.d_k_eff_t
+            self._d_con_t += hh.weight*hh.d_con_t
+            self._d_inc_t += hh.weight*hh.d_inc_t
+            self._d_inc_sp_t += hh.weight*hh.d_inc_sp_t
+            self._d_wb_t += hh.weight*hh.d_wb_t
+            self.__wb_smooth += hh.weight*hh.wb_smooth
+            self.__con_smooth += hh.weight*hh.con_smooth
         return
     
     def _set_shock_state(self, L, K, aff_flag):

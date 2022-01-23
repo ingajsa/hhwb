@@ -94,7 +94,7 @@ class Household(Agent):
 
     @property
     def weight(self):
-        return self.__weight
+        return self.__weight/self.__n_inds
 
     @property
     def k_eff_0(self):
@@ -493,7 +493,7 @@ class Household(Agent):
         d_con_t = self._d_con_t/self.__n_inds
         self.__wb_0 += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
         self.__wb_t += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
-        self._d_wb_t = (self.__wb_0 - self.__wb_t)#/self.__wb_0
+        self._d_wb_t = self.__n_inds*(self.__wb_0 - self.__wb_t)#/self.__wb_0
 
         return
     
@@ -502,7 +502,7 @@ class Household(Agent):
         d_con_t = self.__con_smooth/self.__n_inds
         self.__wb_0_sm += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
         self.__wb_t_sm += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
-        self.__wb_smooth = (self.__wb_0_sm - self.__wb_t_sm)#/self.__wb_0
+        self.__wb_smooth = self.__n_inds*(self.__wb_0_sm - self.__wb_t_sm)#/self.__wb_0
 
         return
     
