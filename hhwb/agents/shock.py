@@ -208,7 +208,7 @@ class Shock(Agent):
             
             new_survey_data=new_survey_data.append(aff_hh_data, ignore_index=True)
         
-        self.__aff_ids = np.zeros((len(new_survey_data), len(event_names)))
+        self.__aff_ids = np.zeros((new_survey_data.shape[0], len(event_names)))
         
         for i, sh in enumerate(self.__time_stemps):
             
@@ -232,7 +232,7 @@ class Shock(Agent):
         hhids=list(df_hh_orig_reg['hhid'])
         
         df_hh_orig_reg['n_copied']=0
-        df_hh_orig_reg['event']=0
+        df_hh_orig_reg['event']=-1
         df_hh_orig_reg['hh_instance']=0
         
         aff_hh_data = pd.DataFrame()
