@@ -44,7 +44,7 @@ else:
 print('Number threads = ' + str(cores))
 hh_reg = HHRegister()
 
-if args.run_name == 'syn_shocks':
+if args.run_name == 'shocks_syn':
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop_syn.csv'
 else:
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv'
