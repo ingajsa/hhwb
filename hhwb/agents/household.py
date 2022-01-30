@@ -60,10 +60,10 @@ class Household(Agent):
         self._vul = vul
         self.__inc_0 = i_0
         self.__inc_sp = i_sp
-        self.__con_0 = i_0
+        self.__con_0 = i_0/DT_STEP
         self.__sav_0 = savings
         self.__sav_t = savings
-        self.__subsistence_line = subsistence_line
+        self.__subsistence_line = subsistence_line/DT_STEP
         self.__decile = decile
         self.__region = region
         self.__isurban = isurban
@@ -508,7 +508,7 @@ class Household(Agent):
     
     def __update_savings(self):
 
-        if (self._d_con_t < 0.05*self.__con_0/DT_STEP) & (self.__sav_t<self.__sav_0):
+        if (self._d_con_t < 0.05*self.__con_0) & (self.__sav_t<self.__sav_0):
             self.__sav_t += self.__sav_0/DT_STEP
         elif (self._t <= self.__tf) & (self.__sav_t> 0.0):
             self.__sav_t -= self._d_con_t - self.__floor

@@ -118,7 +118,6 @@ class Shock(Agent):
     def apply_shock(hh, L, K, dt_reco, affected_hhs):
 
         if hh.hhid in affected_hhs:
-            
             hh.shock(aff_flag=True, L=L, K=K, dt=dt_reco)
         else:
             hh.shock(aff_flag=False, L=L, K=K, dt=dt_reco)
