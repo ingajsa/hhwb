@@ -60,13 +60,11 @@ sys.dont_write_bytecode = True
 run_names=[
     'shocks',
     'shocks_single',
-    'shocks_syn'
     ]
 
 run_times=[
     162,
-    146,
-    162
+    146
     ]
 
 
