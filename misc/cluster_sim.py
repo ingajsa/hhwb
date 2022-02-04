@@ -18,6 +18,7 @@ from hhwb.agents.hh_register import HHRegister
 from hhwb.agents.government import Government
 from hhwb.agents.shock import Shock
 from hhwb.application.climate_life import ClimateLife
+from hhwb.application.data_analysis import DataAnalysis
 import psutil
 
 parser = argparse.ArgumentParser(
@@ -70,5 +71,16 @@ fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv
 # print('Shocks prepared')
 # # print(fld.aff_ids)
 cl = ClimateLife(all_hhs, fld, gov)
-cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
+# cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
+#          cores=cores, reco_period=args.run_time)
+cl.start(work_path='', result_path='',
          cores=cores, reco_period=args.run_time)
+
+survey_data_path=hh_path
+shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
+output_data_path='/home/insauer/mnt/ebm/inga/hhwb/data/output_shocks_syn/'
+
+da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
+
+da.analyse_time(step=20000)
+da.analyse_wb(step=20000)

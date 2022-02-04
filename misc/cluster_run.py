@@ -57,10 +57,44 @@ sys.dont_write_bytecode = True
 
 # shock_files
 
-run_names=[
-    'shocks',
-    'shocks_single',
-    ]
+run_names=['shocks_2002-07-06',
+ 'shocks_2002-07-20',
+ 'shocks_2003-06-25',
+ 'shocks_2003-07-19',
+ 'shocks_2003-12-19',
+ 'shocks_2004-02-11',
+ 'shocks_2004-06-28',
+ 'shocks_2004-07-31',
+ 'shocks_2004-08-24',
+ 'shocks_2004-11-19',
+ 'shocks_2004-11-23',
+ 'shocks_2004-11-29',
+ 'shocks_2005-07-27',
+ 'shocks_2005-09-15',
+ 'shocks_2006-01-26',
+ 'shocks_2006-07-11',
+ 'shocks_2006-11-30',
+ 'shocks_2007-01-10',
+ 'shocks_2008-02-12',
+ 'shocks_2008-05-10',
+ 'shocks_2008-07-28',
+ 'shocks_2008-12-28',
+ 'shocks_2009-02-02',
+ 'shocks_2009-07-25',
+ 'shocks_2009-10-02',
+ 'shocks_2011-01-01',
+ 'shocks_2011-02-01',
+ 'shocks_2011-06-05',
+ 'shocks_2011-09-28',
+ 'shocks_2011-12-16',
+ 'shocks_2012-02-20',
+ 'shocks_2012-12-04',
+ 'shocks_2013-01-04',
+ 'shocks_2014-06-17',
+ 'shocks_2014-09-19',
+ 'shocks_2014-12-10',
+ 'shocks_2015-10-22',
+ 'shocks_2015-12-12']
 
 run_times=[
     162,
@@ -163,7 +197,7 @@ if num > 1:
 enum = 1
 
 for r, run_name in enumerate(run_names):
-    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[r])
+    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1])
     enum += 1
 if num > 1:
     print("Scheduled %s runs" % num)
