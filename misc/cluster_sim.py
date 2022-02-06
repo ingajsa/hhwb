@@ -78,7 +78,7 @@ else:
 
 survey_data_path=work_path+hh_path
 shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
-output_data_path='/p/projects/ebm/inga/hhwb/single_shocks/'+args.run_name+'/'
+output_data_path='/p/projects/ebm/inga/hhwb/single_shocks/run_'+args.run_name+'/'
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
 
