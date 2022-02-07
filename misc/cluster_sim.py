@@ -43,42 +43,42 @@ else:
     cores=7
     
 print('Number threads = ' + str(cores))
-# hh_reg = HHRegister()
+hh_reg = HHRegister()
 
 if args.run_name == 'shocks_syn':
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop_syn.csv'
 else:
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv'
 
-# # create HH agents in the register
-# hh_reg.set_from_csv(work_path=work_path, path=hh_path, id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
-#                       vul_col='vul', income_col='income', income_sp='income_sp', region='region',
-#                       decile='decile', savings='savings', subsistence_line='subsistence_line',
-#                       ispoor='ispoor', isurban='isurban')
+# create HH agents in the register
+hh_reg.set_from_csv(work_path=work_path, path=hh_path, id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
+                      vul_col='vul', income_col='income', income_sp='income_sp', region='region',
+                      decile='decile', savings='savings', subsistence_line='subsistence_line',
+                      ispoor='ispoor', isurban='isurban')
 
-# # # print('Households registered')
-# # # ## get number of registered households
+# # print('Households registered')
+# # ## get number of registered households
 
-# all_hhs = hh_reg.hh_list
-# # # ## set up a goverment
-# gov = Government()
-# gov.set_tax_rate(all_hhs)
+all_hhs = hh_reg.hh_list
+# # ## set up a goverment
+gov = Government()
+gov.set_tax_rate(all_hhs)
 
-# fld = Shock()
-# #fld.set_shock_from_csv()
-# fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-',run=args.run_name)
+fld = Shock()
+#fld.set_shock_from_csv()
+fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-',run=args.run_name)
 
-# # print('Shocks prepared')
-# # # print(fld.aff_ids)
-# cl = ClimateLife(all_hhs, fld, gov)
-# # cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
-# #          cores=cores, reco_period=args.run_time)
-# cl.start(work_path='', result_path='',
+# print('Shocks prepared')
+# # print(fld.aff_ids)
+cl = ClimateLife(all_hhs, fld, gov)
+# cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
 #          cores=cores, reco_period=args.run_time)
+cl.start(work_path='', result_path='',
+          cores=cores, reco_period=args.run_time)
 
 survey_data_path=work_path+hh_path
 shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
-output_data_path='/p/projects/ebm/inga/hhwb/single_shocks/run_'+args.run_name+'/'
+output_data_path='/p/projects/ebm/inga/hhwb/single_shocks_0702/run_'+args.run_name+'/'
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
 
