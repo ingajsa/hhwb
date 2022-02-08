@@ -66,7 +66,8 @@ gov.set_tax_rate(all_hhs)
 
 fld = Shock()
 #fld.set_shock_from_csv()
-fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv', event_identifier='-',run=args.run_name)
+fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv',
+               event_identifier='-', run=args.run_name)
 
 # print('Shocks prepared')
 # # print(fld.aff_ids)
@@ -78,7 +79,7 @@ cl.start(work_path='', result_path='',
 
 survey_data_path=work_path+hh_path
 shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
-output_data_path='/p/projects/ebm/inga/hhwb/single_shocks_0702/run_'+args.run_name+'/'
+output_data_path='/p/projects/ebm/inga/hhwb/single_shocks_0802/run_'+args.run_name+'/'
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
 
