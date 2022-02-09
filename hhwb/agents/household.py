@@ -144,7 +144,7 @@ class Household(Agent):
     def subsistence_line(self):
         return self.__subsistence_line
 
-    def update_reco(self, L_t=None, K=None):
+    def update_reco(self, L_t=None, K=None, t_i=0, dt=0):
         """
         Parameters
         ----------
@@ -162,6 +162,8 @@ class Household(Agent):
         None.
     
         """
+        if t_i==7:
+            self._dt = dt
         self._update_k_eff()
         self._update_income_sp(L_t, K)
         self._update_income()
@@ -494,7 +496,14 @@ class Household(Agent):
         self.__wb_0 += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
         self.__wb_t += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
         self._d_wb_t = self.__n_inds*(self.__wb_0 - self.__wb_t)#/self.__wb_0
-
+        if self.__hhid ==2249:
+            print('twb: '+ str(self.__twb))
+            print('dt: '+ str(self._dt))
+            print('con_0: '+ str(con_0))
+            print('d_con_t: '+ str(d_con_t))
+            print('wb_0: '+ str(self.__wb_0))
+            print('wb_t: '+ str(self.__wb_t))
+            print('d_wb_t: '+ str(self._d_wb_t))
         return
     
     def _update_wb_sav(self):

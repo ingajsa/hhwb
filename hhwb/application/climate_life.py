@@ -48,8 +48,8 @@ class ClimateLife():
         
         return self.__dt_life
     @staticmethod
-    def update_reco(hh, gov):
-        hh.update_reco(gov.L_t, gov.K)
+    def update_reco(hh, gov, t_i, dt):
+        hh.update_reco(gov.L_t, gov.K, t_i, dt)
         
         return hh
     
@@ -181,7 +181,7 @@ class ClimateLife():
                 
                 if not t_i in self.__shock.time_stemps:
                     p = mp.Pool(cores)
-                    prod_x=partial(ClimateLife.update_reco, gov=self.__gov)
+                    prod_x=partial(ClimateLife.update_reco, gov=self.__gov, t_i=t_i, dt=dt_reco)
                     self.__hhs=p.map(prod_x, self.__hhs)
                     p.close()
                     p.join()
