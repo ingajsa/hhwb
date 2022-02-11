@@ -77,7 +77,7 @@ else:
 # cl.start(work_path='', result_path='',
 #           cores=cores, reco_period=args.run_time)
 
-survey_data_path=work_path+ '/data/survey_data/PHL/survey_'+args.run_name+'analysed.csv'#hh_path
+survey_data_path=work_path+ '/data/survey_data/PHL/survey_'+args.run_name+'_analysed.csv'#hh_path
 shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
 output_data_path='/p/projects/ebm/inga/hhwb/data/output_'+args.run_name+'/'
 
