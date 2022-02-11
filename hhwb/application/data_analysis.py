@@ -110,7 +110,9 @@ class DataAnalysis():
         col=0
         add=step
         
-        month=[65, 130, 196, 261]
+        month=[  7,  19,  20,  26,  28,  32,  34,  38,  47,  48,  53,  59,  64,
+             66,  76,  80,  83,  86,  91,  92,  99, 101, 110, 117, 118, 123,
+            127, 130, 132, 133, 142, 144, 162, 166, 169, 180, 182, 201]
         while add > 0:
             print(col)
             cols=np.arange(col,col+add)
@@ -131,8 +133,7 @@ class DataAnalysis():
         
         col=0
         add=step
-        
-        month=[65, 130, 196, 261]
+
         while add > 0:
             print(col)
             cols=np.arange(col,col+add)
