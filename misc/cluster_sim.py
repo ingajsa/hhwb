@@ -83,5 +83,7 @@ output_data_path='/p/projects/ebm/inga/hhwb/data/output_'+args.run_name+'/'
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
 
-da.analyse_time(step=20000)
-da.analyse_wb(step=20000)
+#da.analyse_time(step=20000)
+#da.analyse_wb(step=20000)
+
+da.analyse_time_steps(step=10000)

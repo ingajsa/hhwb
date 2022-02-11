@@ -153,7 +153,7 @@ class DataAnalysis():
                 add=step
             
         #self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
-        self.__hhs.to_csv('/home/insauer/projects/WB_model/hhwb/data/analyse_results/survey_syn_analysed.csv')
+        self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
         
             
                     
