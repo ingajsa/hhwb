@@ -103,6 +103,58 @@ class DataAnalysis():
                 add=step
             
         self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
+        
+        
+    def analyse_time_steps(self, step=10000):
+        
+        col=0
+        add=step
+        
+        month=[65, 130, 196, 261]
+        while add > 0:
+            print(col)
+            cols=np.arange(col,col+add)
+            df_keff=pd.read_csv(self.__output_data_path + 'keff.csv', usecols=cols, header=None)
+            df_inc=pd.read_csv(self.__output_data_path + 'inc.csv', usecols=cols, header=None)
+            df_inc_sp=pd.read_csv(self.__output_data_path + 'inc_sp.csv', usecols=cols, header=None)
+            for m in month:
+                
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_{}'.format(str(m))]=np.array(df_keff.iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_{}'.format(str(m))]=np.array(df_inc.iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_sp_{}'.format(str(m))]=np.array(df_inc_sp.iloc[m,:])
+
+            col+=add
+            if col+add>=self.__hhs.shape[0]:
+                add=self.__hhs.shape[0]-col
+            else:
+                add=step
+        
+        col=0
+        add=step
+        
+        month=[65, 130, 196, 261]
+        while add > 0:
+            print(col)
+            cols=np.arange(col,col+add)
+            df_cons=pd.read_csv(self.__output_data_path + 'cons.csv', usecols=cols, header=None)
+            df_cons_sm=pd.read_csv(self.__output_data_path + 'cons_sm.csv', usecols=cols, header=None)
+            df_wb=pd.read_csv(self.__output_data_path + 'wb.csv', usecols=cols, header=None)
+            df_wb_sm=pd.read_csv(self.__output_data_path + 'wb_sm.csv', usecols=cols, header=None)
+            for m in month:
+                
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'cons_{}'.format(str(m))]=np.array(df_cons.iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'cons_sm_{}'.format(str(m))]=np.array(df_cons_sm.iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_{}'.format(str(m))]=np.array(df_wb.iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_sm_{}'.format(str(m))]=np.array(df_wb_sm.iloc[m,:])
+            col+=add
+            if col+add>=self.__hhs.shape[0]:
+                add=self.__hhs.shape[0]-col
+            else:
+                add=step
+            
+        #self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
+        self.__hhs.to_csv('/home/insauer/projects/WB_model/hhwb/data/analyse_results/survey_syn_analysed.csv')
+        
             
                     
         
