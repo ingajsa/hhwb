@@ -49,6 +49,11 @@ if args.run_name == 'shocks_syn':
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop_syn.csv'
 else:
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv'
+    
+if args.run_name =='shocks_syn' or args.run_name =='shocks':
+    output='data/output_'+args.run_name+'/'
+else:
+    output='single_shocks_0902/'+'run_'+args.run_name+'/'
 
 # create HH agents in the register
 # hh_reg.set_from_csv(work_path=work_path, path=hh_path, id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
@@ -79,7 +84,7 @@ else:
 
 survey_data_path=work_path+ hh_path
 shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
-output_data_path='/p/projects/ebm/inga/hhwb/data/output_'+args.run_name+'/'
+output_data_path='/p/projects/ebm/inga/hhwb/'+output
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
 
