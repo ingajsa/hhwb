@@ -114,7 +114,7 @@ class DataAnalysis():
 
         month = [  7,  19,  20,  26,  28,  32,  34,  38,  47,  48,  53,  59,  64,
              66,  76,  80,  83,  86,  91,  92,  99, 101, 110, 117, 118, 123,
-            127, 130, 132, 133, 142, 144, 162, 166, 169, 180, 182, 201, 240, 350]
+            127, 130, 132, 133, 142, 144, 162, 166, 169, 180, 182, 201]
         while add > 0:
             print(col)
             cols=np.arange(col,col+add)
@@ -124,6 +124,7 @@ class DataAnalysis():
             for m in month:
                 
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_{}'.format(str(m))]=np.array(df_keff.iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_diff_{}'.format(str(m))]=np.array(df_keff.diff().iloc[m-1,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_{}'.format(str(m))]=np.array(df_inc.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_sp_{}'.format(str(m))]=np.array(df_inc_sp.iloc[m,:])
 
@@ -149,8 +150,8 @@ class DataAnalysis():
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'cons_sm_{}'.format(str(m))]=np.array(df_cons_sm.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_{}'.format(str(m))]=np.array(df_wb.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_sm_{}'.format(str(m))]=np.array(df_wb_sm.iloc[m,:])
-                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_inc_{}'.format(str(m))]=np.array(df_wb.diff().iloc[m,:])
-                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_inc_sm_{}'.format(str(m))]=np.array(df_wb_sm.diff().iloc[m,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_inc_{}'.format(str(m))]=np.array(df_wb.diff().iloc[m+1,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_inc_sm_{}'.format(str(m))]=np.array(df_wb_sm.diff().iloc[m+1,:])
             col+=add
             if col+add>=self.__hhs.shape[0]:
                 add=self.__hhs.shape[0]-col
