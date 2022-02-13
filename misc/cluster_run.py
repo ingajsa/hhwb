@@ -57,7 +57,7 @@ sys.dont_write_bytecode = True
 
 # shock_files
 
-run_names= ['shocks'
+run_names= ['shocks',
          'shocks_syn']
 
 # [ 'shocks_7',
