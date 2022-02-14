@@ -8,7 +8,7 @@ Created on Fri Mar 13 21:48:03 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from hhwb.agents.agent import Agent
-from hhwb.util.constants import PI, RHO, ETA, T_RNG, DT_STEP, TEMP_RES, DT, SUBS_SAV_RATE, OPT_DYN
+from hhwb.util.constants import PI, ETA, T_RNG, DT_STEP, TEMP_RES, DT, SUBS_SAV_RATE, OPT_DYN
 
 
 AGENT_TYPE = 'HH'
@@ -493,8 +493,8 @@ class Household(Agent):
         self.__twb += self._dt
         con_0 = self.__con_0/self.__n_inds
         d_con_t = self._d_con_t/self.__n_inds
-        self.__wb_0 += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
-        self.__wb_t += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
+        self.__wb_0 += ((con_0**(1-ETA))/(1-ETA)) * self._dt 
+        self.__wb_t += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt 
         self._d_wb_t = self.__n_inds*(self.__wb_0 - self.__wb_t)#/self.__wb_0
         if self.__hhid ==2249:
             print('twb: '+ str(self.__twb))
@@ -509,8 +509,8 @@ class Household(Agent):
     def _update_wb_sav(self):
         con_0 = self.__con_0/self.__n_inds
         d_con_t = self.__con_smooth/self.__n_inds
-        self.__wb_0_sm += ((con_0**(1-ETA))/(1-ETA)) * self._dt * np.e**(-RHO * self.__twb)
-        self.__wb_t_sm += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt * np.e**(-RHO * self.__twb) 
+        self.__wb_0_sm += ((con_0**(1-ETA))/(1-ETA)) * self._dt
+        self.__wb_t_sm += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt 
         self.__wb_smooth = self.__n_inds*(self.__wb_0_sm - self.__wb_t_sm)#/self.__wb_0
 
         return
