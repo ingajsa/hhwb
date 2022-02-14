@@ -69,7 +69,7 @@ class DataAnalysis():
             else:
                 add=step
                 
-        self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
+        self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
         
     def analyse_wb(self, step=20000):
         
@@ -102,7 +102,7 @@ class DataAnalysis():
             else:
                 add=step
             
-        self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
+        self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
         
         
     def analyse_time_steps(self, step=10000):
@@ -112,9 +112,9 @@ class DataAnalysis():
         
         #month=[32, 34, 38, 43, 53, 78, 80, 101, 160, 169, 182, 240]
 
-        month = [  7,  19,  20,  26,  28,  32,  34,  38,  47,  48,  53,  59,  64,
-             66,  76,  80,  83,  86,  91,  92,  99, 101, 110, 117, 118, 123,
-            127, 130, 132, 133, 142, 144, 162, 166, 169, 180, 182, 201]
+        month = [  7,  19,  20,  26,  28,  32,  34,  38, 43, 47,  48,  53,  59,  64,
+             66,  76, 78, 80,  83,  86,  91,  92,  99, 101, 110, 117, 118, 123,
+            127, 130, 132, 133, 142, 144, 160, 162, 166, 169, 180, 182, 201, 240]
         while add > 0:
             print(col)
             cols=np.arange(col,col+add)
