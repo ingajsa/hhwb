@@ -50,10 +50,7 @@ if args.run_name == 'shocks_syn':
 else:
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv'
     
-if args.run_name =='shocks_syn' or args.run_name =='shocks':
-    output='data/output_'+args.run_name+'/'
-else:
-    output='single_shocks_0902/'+'run_'+args.run_name+'/'
+
 
 # create HH agents in the register
 hh_reg.set_from_csv(work_path=work_path, path=hh_path, id_col='fhhid', n_ind = 'n_individuals', weight_col='weight',
@@ -71,7 +68,7 @@ gov.set_tax_rate(all_hhs)
 
 fld = Shock()
 #fld.set_shock_from_csv()
-fld.read_shock(work_path=work_path, path='/data/shock_data/'+args.run_name+'.csv',
+fld.read_shock(work_path=work_path, path='/data/shock_data/shocks_seed/'+args.run_name+'.csv',
                 event_identifier='-', run=args.run_name)
 
 # print('Shocks prepared')
@@ -83,7 +80,7 @@ cl.start(work_path='', result_path='',
           cores=cores, reco_period=args.run_time)
 
 survey_data_path=work_path+ hh_path
-shock_data_path=work_path+'/data/shock_data/'+args.run_name+'.csv'
+shock_data_path=work_path+'/data/shock_data/shocks_seed/'+args.run_name+'.csv'
 output_data_path=''
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)

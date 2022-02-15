@@ -146,7 +146,7 @@ class Shock(Agent):
     def set_shock_from_csv(self, work_path='/home/insauer/projects/WB_model/hhwb',
                            path_haz='/data/hazard_data/PHL_sat/haz_dat_30as_{}_vul.csv',
                            path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL.csv',
-                           hh_reg=None, k_eff=0):
+                           hh_reg=None, k_eff=0, seed=2020):
 
         
 
@@ -162,14 +162,14 @@ class Shock(Agent):
                 self.__time_stemps = weeks
                 
 
-            self.__set_aff_hhs_disaster_set(work_path, path_haz, path_hh, reg, event_names)
+            self.__set_aff_hhs_disaster_set(work_path, path_haz, path_hh, reg, event_names, seed)
         
         
         shock_df = pd.DataFrame(data=self.__aff_ids, columns=event_names)
         
         shock_df['region']=df_hh['region']
         
-        shock_df.to_csv(work_path + '/data/output/shocks/shocks_99.csv')
+        shock_df.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/shock_data/shocks_seed/shocks_check_{}.csv'.format(str(seed)))
 
 
         return
@@ -178,7 +178,7 @@ class Shock(Agent):
                            path_haz='/data/output/shocks/shocks_99.csv',
                            path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop.csv',
                            path_hh_orig='/data/surveys_prepared/PHL/survey_PHL.csv',
-                           hh_reg=None, k_eff=0):
+                           hh_reg=None, k_eff=0, seed=2020):
 
 
         df_hh = pd.read_csv(work_path + path_hh)
@@ -203,7 +203,7 @@ class Shock(Agent):
             df_hh_orig_reg = df_hh_orig.loc[df_hh_orig['region']==reg]
             df_shock_reg = df_shock.loc[df_shock['region']==reg]
             
-            aff_hh_data = self.__shock_hh_without_location(df_hh_reg, df_hh_orig_reg, df_shock_reg, reg)
+            aff_hh_data = self.__shock_hh_without_location(df_hh_reg, df_hh_orig_reg, df_shock_reg, reg, seed)
             
             new_survey_data=new_survey_data.append(aff_hh_data, ignore_index=True)
         
@@ -217,14 +217,16 @@ class Shock(Agent):
         
         shocks['region']=new_survey_data['region']
         
-        new_survey_data.to_csv(work_path + '/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop_syn.csv')
+        new_survey_data.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(seed))
         
-        shocks.to_csv('/home/insauer/projects/WB_model/hhwb/data/shocks/shocks_synthetic.csv')
+        shocks.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/shock_data/shocks_syn_seed/shocks_syn_{}'.format(seed))
         
         return
 
 
-    def __shock_hh_without_location(self, df_hh_reg, df_hh_orig_reg, df_shock_reg, reg):
+    def __shock_hh_without_location(self, df_hh_reg, df_hh_orig_reg, df_shock_reg, reg, seed):
+        
+        np.random.seed(seed)
         
         c_aff_hhs = 0
         
@@ -246,7 +248,7 @@ class Shock(Agent):
             
             while c_hh < n_aff_shock:
                 
-                hh_ind = random.choice(hhids)
+                hh_ind = np.random.choice(hhids)
                 
                 if df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'weight'].sum() <= \
                     df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum():
@@ -371,8 +373,8 @@ class Shock(Agent):
     #         aff_ids[aff_hhs, ev_id]=1
     #     return
     
-    def __set_aff_hhs_disaster_set(self, work_path, path_haz, path_hh, reg, event_names):
-
+    def __set_aff_hhs_disaster_set(self, work_path, path_haz, path_hh, reg, event_names, seed):
+        np.random.seed(seed)
         print('region')
         print(reg)
         df_haz = pd.read_csv((work_path + path_haz).format(reg))
@@ -394,7 +396,7 @@ class Shock(Agent):
                 n_aff_people = np.round(frac* n_people)
                 c_n_aff_hhs = 0
                 while (c_n_aff_hhs < n_aff_people) and (len(hhids)>0):
-                    hh_ind = random.choice(hhids)
+                    hh_ind = np.random.choice(hhids)
                     aff_hhs.append(hh_ind)
                     c_n_aff_hhs += df_hh.loc[df_hh['fhhid']==hh_ind].n_individuals.values[0]
                     hhids.remove(hh_ind)
