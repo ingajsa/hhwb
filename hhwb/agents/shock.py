@@ -169,7 +169,7 @@ class Shock(Agent):
         
         shock_df['region']=df_hh['region']
         
-        shock_df.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/shock_data/shocks_seed/shocks_check_{}.csv'.format(str(seed)))
+        shock_df.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/shock_data/shocks_seed/shocks_{}.csv'.format(str(seed)))
 
 
         return
@@ -183,7 +183,7 @@ class Shock(Agent):
 
         df_hh = pd.read_csv(work_path + path_hh)
         df_hh_orig = pd.read_csv(work_path + path_hh_orig)
-        df_shock = pd.read_csv(work_path + path_haz)
+        df_shock = pd.read_csv(work_path + '/data/shock_data/shocks_seed/shocks_{}.csv'.format(str(seed)))
         
         self.__time_stemps = df_shock.columns[1:-1]#.astype(int)
         
@@ -217,9 +217,9 @@ class Shock(Agent):
         
         shocks['region']=new_survey_data['region']
         
-        new_survey_data.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(seed))
+        new_survey_data.to_csv(work_path + '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(seed))
         
-        shocks.to_csv('/home/insauer/mnt/ebm/inga/hhwb/data/shock_data/shocks_syn_seed/shocks_syn_{}'.format(seed))
+        shocks.to_csv(work_path + '/data/shock_data/shocks_syn_seed/shocks_syn_{}'.format(seed))
         
         return
 
@@ -244,12 +244,11 @@ class Shock(Agent):
             n_aff_shock = df_hh_reg.loc[df_hh_reg['fhhid'].isin(aff_ids_shock), 'n_individuals'].sum()
             
             c_hh = 0
-            print(n_aff_shock)
             
             while c_hh < n_aff_shock:
                 
                 hh_ind = np.random.choice(hhids)
-                
+                #print(len(hhids))
                 if df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'weight'].sum() <= \
                     df_hh_orig_reg.loc[df_hh_orig_reg['hhid']== hh_ind,'n_individuals'].sum():
                     hhids.remove(hh_ind)
@@ -278,7 +277,7 @@ class Shock(Agent):
         start_date = date(2000,1,1)
         
         shock_series = pd.read_csv((work_path + path_haz).format(reg))
-            
+
         event_names = [col for col in shock_series.columns if '-' in col]
         
         dates_list = [datetime.strptime(event, '%Y-%m-%d').date() for event in event_names]

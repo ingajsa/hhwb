@@ -31,6 +31,10 @@ parser.add_argument(
     '--run_time', type=int, default=160,
     help='runoff model')
 
+parser.add_argument(
+    '--seed', type=int, default=0,
+    help='runoff model')
+
 args = parser.parse_args()
 
 CLUSTER=True
@@ -68,24 +72,30 @@ gov.set_tax_rate(all_hhs)
 
 fld = Shock()
 #fld.set_shock_from_csv()
-fld.read_shock(work_path=work_path, path='/data/shock_data/shocks_seed/'+args.run_name+'.csv',
-                event_identifier='-', run=args.run_name)
+# fld.read_shock(work_path=work_path, path='/data/shock_data/shocks_seed/'+args.run_name+'.csv',
+#                 event_identifier='-', run=args.run_name)
+
+fld.generate_single_shocks(work_path='/home/insauer/projects/WB_model/hhwb',
+                        path_haz='/data/output/shocks/shocks_99.csv',
+                        path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop.csv',
+                        path_hh_orig='/data/surveys_prepared/PHL/survey_PHL.csv',
+                        hh_reg=None, k_eff=0, seed=args.seed)
 
 # print('Shocks prepared')
 # # print(fld.aff_ids)
-cl = ClimateLife(all_hhs, fld, gov)
-# cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
-#          cores=cores, reco_period=args.run_time)
-cl.start(work_path='', result_path='',
-          cores=cores, reco_period=args.run_time)
+# cl = ClimateLife(all_hhs, fld, gov)
+# # cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
+# #          cores=cores, reco_period=args.run_time)
+# cl.start(work_path='', result_path='',
+#           cores=cores, reco_period=args.run_time)
 
-survey_data_path=work_path+ hh_path
-shock_data_path=work_path+'/data/shock_data/shocks_seed/'+args.run_name+'.csv'
-output_data_path=''
+# survey_data_path=work_path+ hh_path
+# shock_data_path=work_path+'/data/shock_data/shocks_seed/'+args.run_name+'.csv'
+# output_data_path=''
 
-da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
+# da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
 
-da.analyse_time(step=20000)
-da.analyse_wb(step=20000)
+# da.analyse_time(step=20000)
+# da.analyse_wb(step=20000)
 
-da.analyse_time_steps(step=10000)
+# da.analyse_time_steps(step=10000)

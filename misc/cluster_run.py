@@ -57,56 +57,60 @@ sys.dont_write_bytecode = True
 
 # shock_files
 
-run_names = [#'shocks_0',
+run_names = ['shocks_0',
  'shocks_1',
  'shocks_2',
  'shocks_3',
- 'shocks_4']
- # 'shocks_5',
- # 'shocks_6',
- # 'shocks_7',
- # 'shocks_8',
- # 'shocks_9',
- # 'shocks_10',
- # 'shocks_11',
- # 'shocks_12',
- # 'shocks_13',
- # 'shocks_14',
- # 'shocks_15',
- # 'shocks_16',
- # 'shocks_17',
- # 'shocks_18',
- # 'shocks_19',
- # 'shocks_20',
- # 'shocks_21',
- # 'shocks_22',
- # 'shocks_23',
- # 'shocks_24',
- # 'shocks_25',
- # 'shocks_26',
- # 'shocks_27',
- # 'shocks_28',
- # 'shocks_29',
- # 'shocks_30',
- # 'shocks_31',
- # 'shocks_32',
- # 'shocks_33',
- # 'shocks_34',
- # 'shocks_35',
- # 'shocks_36',
- # 'shocks_37',
- # 'shocks_38',
- # 'shocks_39',
- # 'shocks_40',
- # 'shocks_41',
- # 'shocks_42',
- # 'shocks_43',
- # 'shocks_44',
- # 'shocks_45',
- # 'shocks_46',
- # 'shocks_47',
- # 'shocks_48',
- # 'shocks_49']
+ 'shocks_4',
+  'shocks_5',
+  'shocks_6',
+  'shocks_7',
+  'shocks_8',
+  'shocks_9',
+  'shocks_10',
+  'shocks_11',
+  'shocks_12',
+  'shocks_13',
+  'shocks_14',
+  'shocks_15',
+  'shocks_16',
+  'shocks_17',
+  'shocks_18',
+  'shocks_19',
+  'shocks_20',
+  'shocks_21',
+  'shocks_22',
+  'shocks_23',
+  'shocks_24',
+  'shocks_25',
+  'shocks_26',
+  'shocks_27',
+  'shocks_28',
+  'shocks_29',
+  'shocks_30',
+  'shocks_31',
+  'shocks_32',
+  'shocks_33',
+  'shocks_34',
+  'shocks_35',
+  'shocks_36',
+  'shocks_37',
+  'shocks_38',
+  'shocks_39',
+  'shocks_40',
+  'shocks_41',
+  'shocks_42',
+  'shocks_43',
+  'shocks_44',
+  'shocks_45',
+  'shocks_46',
+  'shocks_47',
+  'shocks_48',
+  'shocks_49']
+
+seeds = [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
+       17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+       34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
 
 # run_names= [ 'shocks',
 #     'shocks_7',
@@ -155,7 +159,7 @@ run_times=[
     ]
 
 
-def schedule_run(run_nb,flag, run_name, run_time):
+def schedule_run(run_nb,flag, run_name, run_time, seed):
     if not flag:
         run_label = "run_%s" % run_name
         if os.path.exists(run_label):
@@ -196,7 +200,7 @@ def schedule_run(run_nb,flag, run_name, run_time):
             "comment": "%s/%s" % (os.getcwd(), run_label),
             "environment": "ALL",
             "executable": 'cluster_sim.py',
-            "options": "--run_name %s --run_time %i "%(run_name, run_time),
+            "options": "--run_name %s --run_time %i --seed %i"%(run_name, run_time, seed),
             "num_threads": args.threads,
             "mem_per_cpu": args.mem_per_cpu if not args.largemem else 15360,   # if mem_per_cpu is larger than MaxMemPerCPU then num_threads is reduced
             "other": "" if args.largemem else ""
@@ -250,7 +254,7 @@ if num > 1:
 enum = 1
 
 for r, run_name in enumerate(run_names):
-    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1])
+    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1], seed = seeds[r])
     enum += 1
 if num > 1:
     print("Scheduled %s runs" % num)
