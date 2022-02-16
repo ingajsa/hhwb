@@ -78,7 +78,7 @@ fld = Shock()
 fld.generate_single_shocks(work_path=work_path,
                         path_haz='/data/output/shocks/shocks_99.csv',
                         path_hh='/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv',
-                        path_hh_orig='/data/surveys_prepared/PHL/survey_PHL.csv',
+                        path_hh_orig='/data/survey_data/PHL/survey_PHL.csv',
                         hh_reg=None, k_eff=0, seed=args.seed)
 
 # print('Shocks prepared')
