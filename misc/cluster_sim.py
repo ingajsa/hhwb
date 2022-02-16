@@ -75,7 +75,7 @@ fld = Shock()
 # fld.read_shock(work_path=work_path, path='/data/shock_data/shocks_seed/'+args.run_name+'.csv',
 #                 event_identifier='-', run=args.run_name)
 
-fld.generate_single_shocks(work_path='/home/insauer/projects/WB_model/hhwb',
+fld.generate_single_shocks(work_path=work_path,
                         path_haz='/data/output/shocks/shocks_99.csv',
                         path_hh='/data/surveys_prepared/PHL/region_hh_full_pack_PHL_pop.csv',
                         path_hh_orig='/data/surveys_prepared/PHL/survey_PHL.csv',
