@@ -72,7 +72,6 @@ gov = Government()
 gov.set_tax_rate(all_hhs)
 
 fld = Shock()
-fld.set_shock_from_csv()
 fld.read_shock(work_path=work_path, path=shock_path +args.run_name+'.csv',
                 event_identifier='-', run=args.run_name)
 
