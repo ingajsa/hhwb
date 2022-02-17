@@ -49,11 +49,12 @@ else:
 print('Number threads = ' + str(cores))
 hh_reg = HHRegister()
 
-if args.run_name == 'shocks_syn':
+if args.run_name.find('syn') != -1:
     hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop_syn.csv'
+    shock_path = '/data/shock_data/shocks_syn_seed/'
 else:
-    hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv'
-    
+    hh_path = '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(str(args.seed))
+    shock_path = '/data/shock_data/shocks_seed/'
 
 
 # create HH agents in the register
@@ -71,23 +72,23 @@ gov = Government()
 gov.set_tax_rate(all_hhs)
 
 fld = Shock()
-#fld.set_shock_from_csv()
-# fld.read_shock(work_path=work_path, path='/data/shock_data/shocks_seed/'+args.run_name+'.csv',
-#                 event_identifier='-', run=args.run_name)
+fld.set_shock_from_csv()
+fld.read_shock(work_path=work_path, path=shock_path +args.run_name+'.csv',
+                event_identifier='-', run=args.run_name)
 
-fld.generate_single_shocks(work_path=work_path,
-                        path_haz='/data/output/shocks/shocks_99.csv',
-                        path_hh='/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv',
-                        path_hh_orig='/data/survey_data/PHL/survey_PHL.csv',
-                        hh_reg=None, k_eff=0, seed=args.seed)
+# fld.generate_single_shocks(work_path=work_path,
+#                         path_haz='/data/output/shocks/shocks_99.csv',
+#                         path_hh='/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv',
+#                         path_hh_orig='/data/survey_data/PHL/survey_PHL.csv',
+#                         hh_reg=None, k_eff=0, seed=args.seed)
 
 # print('Shocks prepared')
 # # print(fld.aff_ids)
-# cl = ClimateLife(all_hhs, fld, gov)
-# # cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
-# #          cores=cores, reco_period=args.run_time)
-# cl.start(work_path='', result_path='',
-#           cores=cores, reco_period=args.run_time)
+cl = ClimateLife(all_hhs, fld, gov)
+# cl.start(work_path=work_path, result_path='/data/output_'+args.run_name+'/',
+#          cores=cores, reco_period=args.run_time)
+cl.start(work_path='', result_path='',
+          cores=cores, reco_period=args.run_time)
 
 # survey_data_path=work_path+ hh_path
 # shock_data_path=work_path+'/data/shock_data/shocks_seed/'+args.run_name+'.csv'

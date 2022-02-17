@@ -124,7 +124,7 @@ class DataAnalysis():
             for m in month:
                 
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_{}'.format(str(m))]=np.array(df_keff.iloc[m,:])
-                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_diff_{}'.format(str(m))]=np.array(df_keff.diff().iloc[m-1,:])
+                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_diff_{}'.format(str(m))]=np.array(df_keff.diff().iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_{}'.format(str(m))]=np.array(df_inc.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_sp_{}'.format(str(m))]=np.array(df_inc_sp.iloc[m,:])
 
@@ -159,6 +159,7 @@ class DataAnalysis():
                 add=step
             
         #self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
+        #self.__hhs.to_csv('/home/insauer/projects/WB_model/hhwb/analyse_results/data/surveys_processed/test/survey_processed.csv')
         self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
         
             
