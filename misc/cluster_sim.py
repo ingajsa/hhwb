@@ -50,10 +50,10 @@ print('Number threads = ' + str(cores))
 hh_reg = HHRegister()
 
 if args.run_name.find('syn') != -1:
-    hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop_syn.csv'
+    hh_path = '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(str(args.seed))
     shock_path = '/data/shock_data/shocks_syn_seed/'
 else:
-    hh_path = '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(str(args.seed))
+    hh_path = '/data/survey_data/PHL/region_hh_full_pack_PHL_pop.csv'
     shock_path = '/data/shock_data/shocks_seed/'
 
 
