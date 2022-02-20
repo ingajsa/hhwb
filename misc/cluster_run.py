@@ -211,7 +211,7 @@ run_times=[
 
 def schedule_run(run_nb,flag, run_name, run_time, seed):
     if not flag:
-        run_label = "run_%s" % run_name
+        run_label = "run_%s_%s" %(run_name, str(seed))
         if os.path.exists(run_label):
         #    run_id += 1
             return
@@ -304,8 +304,9 @@ if num > 1:
 enum = 1
 
 for r, run_name in enumerate(run_names):
-    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1], seed = seeds[r])
-    enum += 1
+    for s, seed in enumerate(seeds):
+        schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1], seed = seed)
+        enum += 1
 if num > 1:
     print("Scheduled %s runs" % num)
 

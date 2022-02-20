@@ -26,27 +26,7 @@ class DataAnalysis():
         self.__run_name = run_name
         
     def analyse_time(self, step=20000):
-        
-        col=0
-        add=step
-        while add > 0:
-            print(col)
-            cols=np.arange(col,col+add)
-            sub_list=list(self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'subsistence_line']/13)
-            cons_list=list(self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'income']/13)
-            df=pd.read_csv(self.__output_data_path + 'cons.csv', usecols=cols, header=None)
-            
-            for i,hhid in enumerate(cols):
-                #print(hhid)
-                self.__hhs.loc[self.__hhs['fhhid']==hhid,
-                                'time_under_sub{}'.format(self.__column_id)]=np.array(cons_list[i]-df.loc[:,hhid]<sub_list[i]).sum()
-                self.__hhs.loc[self.__hhs['fhhid']==hhid,
-                                'reco_time{}'.format(self.__column_id)]=np.array(cons_list[i]-df.loc[:,hhid]<0.95*cons_list[i]).sum()
-            col+=add
-            if col+add>=self.__hhs.shape[0]:
-                add=self.__hhs.shape[0]-col
-            else:
-                add=step       
+              
         col=0
         add=step
         while add > 0:
@@ -119,14 +99,14 @@ class DataAnalysis():
             print(col)
             cols=np.arange(col,col+add)
             df_keff=pd.read_csv(self.__output_data_path + 'keff.csv', usecols=cols, header=None)
-            df_inc=pd.read_csv(self.__output_data_path + 'inc.csv', usecols=cols, header=None)
-            df_inc_sp=pd.read_csv(self.__output_data_path + 'inc_sp.csv', usecols=cols, header=None)
+            #df_inc=pd.read_csv(self.__output_data_path + 'inc.csv', usecols=cols, header=None)
+            #df_inc_sp=pd.read_csv(self.__output_data_path + 'inc_sp.csv', usecols=cols, header=None)
             for m in month:
                 
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_{}'.format(str(m))]=np.array(df_keff.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'keff_diff_{}'.format(str(m))]=np.array(df_keff.diff().iloc[m,:])
-                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_{}'.format(str(m))]=np.array(df_inc.iloc[m,:])
-                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_sp_{}'.format(str(m))]=np.array(df_inc_sp.iloc[m,:])
+                #self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_{}'.format(str(m))]=np.array(df_inc.iloc[m,:])
+                #self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'inc_sp_{}'.format(str(m))]=np.array(df_inc_sp.iloc[m,:])
 
             col+=add
             if col+add>=self.__hhs.shape[0]:
@@ -141,13 +121,13 @@ class DataAnalysis():
         while add > 0:
             print(col)
             cols=np.arange(col,col+add)
-            df_cons=pd.read_csv(self.__output_data_path + 'cons.csv', usecols=cols, header=None)
+            #df_cons=pd.read_csv(self.__output_data_path + 'cons.csv', usecols=cols, header=None)
             df_cons_sm=pd.read_csv(self.__output_data_path + 'cons_sm.csv', usecols=cols, header=None)
             df_wb=pd.read_csv(self.__output_data_path + 'wb.csv', usecols=cols, header=None)
             df_wb_sm=pd.read_csv(self.__output_data_path + 'wb_sm.csv', usecols=cols, header=None)
             for m in month:
                 
-                self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'cons_{}'.format(str(m))]=np.array(df_cons.iloc[m,:])
+                #self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'cons_{}'.format(str(m))]=np.array(df_cons.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'cons_sm_{}'.format(str(m))]=np.array(df_cons_sm.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_{}'.format(str(m))]=np.array(df_wb.iloc[m,:])
                 self.__hhs.loc[self.__hhs['fhhid'].isin(cols),'wb_sm_{}'.format(str(m))]=np.array(df_wb_sm.iloc[m,:])

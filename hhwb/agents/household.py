@@ -496,14 +496,7 @@ class Household(Agent):
         self.__wb_0 += ((con_0**(1-ETA))/(1-ETA)) * self._dt 
         self.__wb_t += (1/(1-ETA)) * (con_0 - d_con_t)**(1-ETA) * self._dt 
         self._d_wb_t = self.__n_inds*(self.__wb_0 - self.__wb_t)#/self.__wb_0
-        if self.__hhid ==2249:
-            print('twb: '+ str(self.__twb))
-            print('dt: '+ str(self._dt))
-            print('con_0: '+ str(con_0))
-            print('d_con_t: '+ str(d_con_t))
-            print('wb_0: '+ str(self.__wb_0))
-            print('wb_t: '+ str(self.__wb_t))
-            print('d_wb_t: '+ str(self._d_wb_t))
+
         return
     
     def _update_wb_sav(self):
