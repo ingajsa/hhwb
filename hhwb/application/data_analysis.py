@@ -39,15 +39,14 @@ class DataAnalysis():
             for i,hhid in enumerate(cols):
                 #print(hhid)
                 self.__hhs.loc[self.__hhs['fhhid']==hhid,
-                               'time_under_sub{}'.format(self.__column_id)]=np.array(cons_list[i]-df.loc[:,hhid]<sub_list[i]).sum()
+                                'time_under_sub{}'.format(self.__column_id)]=np.array(cons_list[i]-df.loc[:,hhid]<sub_list[i]).sum()
                 self.__hhs.loc[self.__hhs['fhhid']==hhid,
-                               'reco_time{}'.format(self.__column_id)]=np.array(cons_list[i]-df.loc[:,hhid]<0.95*cons_list[i]).sum()
+                                'reco_time{}'.format(self.__column_id)]=np.array(cons_list[i]-df.loc[:,hhid]<0.95*cons_list[i]).sum()
             col+=add
             if col+add>=self.__hhs.shape[0]:
                 add=self.__hhs.shape[0]-col
             else:
-                add=step
-                
+                add=step       
         col=0
         add=step
         while add > 0:
@@ -68,7 +67,7 @@ class DataAnalysis():
                 add=self.__hhs.shape[0]-col
             else:
                 add=step
-                
+       
         self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
         
     def analyse_wb(self, step=20000):
@@ -87,6 +86,7 @@ class DataAnalysis():
                 add=self.__hhs.shape[0]-col
             else:
                 add=step
+
         col=0
         add=step
         while add > 0:
@@ -103,7 +103,7 @@ class DataAnalysis():
                 add=step
             
         self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
-        
+
         
     def analyse_time_steps(self, step=10000):
         
@@ -133,6 +133,7 @@ class DataAnalysis():
                 add=self.__hhs.shape[0]-col
             else:
                 add=step
+                
         
         col=0
         add=step
@@ -158,8 +159,6 @@ class DataAnalysis():
             else:
                 add=step
             
-        #self.__hhs.to_csv('survey_'+self.__run_name+'.csv')
-        #self.__hhs.to_csv('/home/insauer/projects/WB_model/hhwb/analyse_results/data/surveys_processed/test/survey_processed.csv')
         self.__hhs.to_csv('survey_'+self.__run_name+'_analysed.csv')
         
             
