@@ -52,11 +52,11 @@ hh_reg = HHRegister()
 
 if args.run_name.find('syn') != -1:
     hh_path = '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(str(args.seed))
-    shock_path = '/data/shock_data/shocks_syn_seed/'
+    shock_path = '/data/shock_data/shocks_syn_seed/'+args.run_name+'.csv'
     output_data_path=''
     
 else:
-    hh_path = '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop_syn_{}.csv'.format(str(args.seed))
+    hh_path = '/data/survey_data/PHL/survey_seed/region_hh_full_pack_PHL_pop.csv'
     
     shock_path = '/data/shock_data/shocks_seed/single_shock_seed_{}/{}_{}.csv'.format(str(args.seed), args.run_name, str(args.seed))
     
@@ -78,7 +78,7 @@ gov = Government()
 gov.set_tax_rate(all_hhs)
 
 fld = Shock()
-fld.read_shock(work_path=work_path, path=shock_path +args.run_name+'.csv',
+fld.read_shock(work_path=work_path, path=shock_path,
                 event_identifier='-', run=args.run_name)
 
 # fld.generate_single_shocks(work_path=work_path,
@@ -96,7 +96,7 @@ cl.start(work_path='', result_path='',
           cores=cores, reco_period=args.run_time)
 
 survey_data_path=work_path+ hh_path
-shock_data_path=work_path+shock_path+args.run_name+'.csv'
+shock_data_path=work_path+shock_path
 
 
 da=DataAnalysis(survey_data_path, shock_data_path, output_data_path, column_id='', run_name=args.run_name)
