@@ -304,9 +304,9 @@ if num > 1:
 enum = 1
 
 for r, run_name in enumerate(run_names):
-    for s, seed in enumerate(seeds):
-        schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1], seed = seed)
-        enum += 1
+        #for s, seed in enumerate(seeds):
+    schedule_run(run_nb=enum,flag=single, run_name=run_name, run_time=run_times[1], seed = seeds[r])
+    enum += 1
 if num > 1:
     print("Scheduled %s runs" % num)
 
